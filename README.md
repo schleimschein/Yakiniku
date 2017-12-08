@@ -1,27 +1,20 @@
-# Flask Dokku Blog
+# Trunks Flask Blog
 
-You can probably view a running example of this repository [here](http://blog.adamlamers.com)
-
-This is a blog engine created with [Flask](http://flask.pocoo.org/) and
-[Bulma](http://bulma.io). It uses [SimpleMDE](https://simplemde.com/) as a backend for editing, and
-[highlightjs](https://highlightjs.org/) for source code highlighting in blog posts.
-
-This repo is designed to work and be deployed with the [Dokku](http://dokku.io) docker tool.
+This is a blog engine created with [Flask](http://flask.pocoo.org/) and [Bulma](http://bulma.io). It is as bare as possible while trying to be very swaggy.
 
 Don't forget to change SECRET_KEY in config.py if you deploy this on your own server.
 
 ## Features
 
-* GitHub flavored markdown in posts.
-* Highlight.js on code blocks out of the box.
-* Post tagging.
-* idk
+* Minimal
+* Swag
+* Post tagging
 
 Local Development
 ------------------
 Set environment variable DATABASE_URL to point to a valid postgresql instance.
 
-    export DATABASE_URL=postgresql://localhost/blog
+    export TRUNKS_DATABASE_URL=postgresql://localhost/[yourdatabase]
 
 Then run:
 
@@ -29,18 +22,5 @@ Then run:
 
 to start a development server.
 
-Installation with Dokku
-------------------
-
-1. Set up [dokku](http://dokku.viewdocs.io/dokku/getting-started/installation/) on a host
-2. Create an app on that host
-3. Create a [postgres service](https://github.com/dokku/dokku-postgres) with dokku and link it to the app you created
-4. Push this app to your dokku host
-5. Visit http://yourapp.com/init
-6. Login with admin/password and change the password or create a new admin user and delete the
-   default admin user.
-
-Installation otherwise
-----------------------
-
-You can also just run this app with gunicorn and point a webserver at it, should work just as well.
+Browse to http://127.0.0.1:5000/init in order to create the first admin user with username: admin and pw: password .
+Once logged-in you can then change the credentials and create more users. Make sure to comment the according method in app.py when you take your blog to production!
