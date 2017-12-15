@@ -35,11 +35,12 @@
 
 
 -->
-<html lang="en">
+<html lang="en has-navbar-fixed-top">
 <head>
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all">
+    <!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
@@ -47,62 +48,78 @@
 </head>
 
 <body>
-    <section class="section header">
-        <nav class="nav">
-            <div class="nav-left">
-                <a class="nav-item is-brand">
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
+
+            <div class="navbar-brand">
+                <a class="navbar-item">
                     <span class="logo-text">{{ settings.blog_title }} ::</span>
                 </a>
-                <a class="nav-item is-tab" href="/">
-                    Home
-                </a>
 
-                <a class="nav-item is-tab" href="{{ url_for('blog') }}">
-                    Blog
-                </a>
-
-                {% if current_user.admin %}
-                <a class="nav-item is-tab" href="{{ url_for('admin_post_list') }}">
-                    Posts
-                </a>
-                <a class="nav-item is-tab" href="{{ url_for('admin_user_list') }}">
-                    Users
-                </a>
-                <a class="nav-item is-tag" href="{{ url_for('admin_settings') }}">
-                    Settings
-                </a>
-                {% endif %}
+                <button class="button navbar-burger" data-target="navMenu">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </button>
             </div>
 
-            <div class="nav-center nav-menu has-text-left">
-                <h1 class="title is-5">{{ self.title() }}</h1>
-            </div>
+            <div class="navbar-menu" id="navMenu">
 
-            <div class="nav-right nav-icons">
-                <a class="nav-item is-brand" href="{{settings.icon_1_link}}">
-                    <i class="fa fa-{{settings.icon_1_icon_type}}"></i>
-                </a>
-                <a class="nav-item is-brand" href="{{settings.icon_2_link}}">
-                    <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
-                </a>
-                {% if current_user.is_authenticated %}
-                <p class="nav-item">
-                <small>Welcome, {{ current_user.name }}</small>
-                </p>
-                <p class="nav-item">
-                    <small><a href="{{ url_for('logout') }}">Logout</a></small>
-                </p>
-                {% else %}
-                <p class="control nav-item">
-                  <input class="input" type="text" placeholder="Search">
-                </p>
-                {% endif %}
+              {% if current_user.admin %}
+                <div class="navbar-start">
+                  <a class="navbar-item is-tab{% if request.path == url_for('admin_post_list') %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
+                      Posts
+                  </a>
+                  <a class="navbar-item is-tab{% if request.path == url_for('admin_user_list') %} is-active {% endif %}" href="{{ url_for('admin_user_list') }}">
+                      Users
+                  </a>
+                  <a class="navbar-item is-tab{% if request.path == url_for('admin_settings') %} is-active {% endif %}" href="{{ url_for('admin_settings') }}">
+                      Settings
+                  </a>
+                </div>
+              {% endif %}
+
+              <!--
+              <div class="navbar-center nav-menu has-text-left">
+                  <h1 class="title is-5">{{ self.title() }}</h1>
+              </div>
+              -->
+
+              <div class="navbar-end">
+                  <a class="navbar-item {% if request.path == settings.icon_1_link %} is-active {% endif %}" href="{{settings.icon_1_link}}">
+                      <i class="fa fa-{{settings.icon_1_icon_type}}"></i>
+                  </a>
+                  <a class="navbar-item {% if request.path == settings.icon_2_link %} is-active {% endif %}" href="{{settings.icon_2_link}}">
+                      <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
+                  </a>
+
+                  {% if current_user.is_authenticated %}
+                    <div class="navbar-item has-dropdown is-hoverable">
+                      <a class="navbar-link">
+                        {{ current_user.name }}
+                      </a>
+
+                      <div class="navbar-dropdown is-boxed">
+                        <a class="navbar-item" href="/admin/users/edit/{{ current_user.id }}">
+                          Profile
+                        </a>
+                        <a class="navbar-item" href="{{ url_for('logout') }}">
+                          Logout
+                        </a>
+                            <!-- <i class="fa fa-caret-down"></i> -->
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="navbar-item">
+                      <input class="input" type="text" placeholder="Search">
+                    </div>
+                  {% endif %}
+              </div>
             </div>
         </nav>
-    </section>
+
 
     <section class="section main-section">
-        <div class="container body-container">
+        <div class="container is-fluid body-container">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                 <div class="notification is-{{ category }}">
@@ -111,13 +128,13 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="columns main-content">
-                <div class="column content main-content-box">
-                    {% block body %}
+            <div class="columns is-desktop main-content">
+                <div class="column is-narrow sidebar">
+                    {% block sidebar %}
                     {% endblock %}
                 </div>
-                <div class="column is-one-quarter sidebar">
-                    {% block sidebar %}
+                <div class="column content main-content-box">
+                    {% block body %}
                     {% endblock %}
                 </div>
             </div>
@@ -126,7 +143,7 @@
 
     <footer class="footer">
         <div class="content">
-            &copy; 2014-2016 Adam Lamers
+            &copy; 2017 Vegeta
         </div>
     </footer>
 
@@ -143,6 +160,34 @@
             hljs.highlightBlock(block);
         });
     });
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+  // Get all "navbar-burger" elements
+  var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+  // Check if there are any navbar burgers
+  if ($navbarBurgers.length > 0) {
+
+    // Add a click event on each of them
+    $navbarBurgers.forEach(function ($el) {
+      $el.addEventListener('click', function () {
+
+        // Get the target from the "data-target" attribute
+        var target = $el.dataset.target;
+        var $target = document.getElementById(target);
+
+        // Toggle the class on both the "navbar-burger" and the "navbar-menu"
+        $el.classList.toggle('is-active');
+        $target.classList.toggle('is-active');
+
+      });
+    });
+  }
+
+});
+
+
     </script>
     {% block javascript %}
     {% endblock %}

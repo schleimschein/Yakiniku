@@ -10,8 +10,8 @@ html {
     font-size:2.5em;
 }
 
-.sidebar {
-    border-left:1px solid rgba(197, 197, 197, 1);
+.navbar{
+    background: hsla(0,0%,96%, 0.1);
 }
 
 .sidebar-heading {
