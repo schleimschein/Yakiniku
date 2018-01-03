@@ -19,7 +19,6 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
     <div class="content">
         <form action="{{ url_for('admin_user_save') }}" method="POST" id="user-form">
             {% if not editing %}
@@ -60,5 +59,4 @@
             <a name="view-preview"></a>
         </div>
     </div>
-</div>
 {% endblock %}

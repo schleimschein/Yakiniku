@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %} New Post {% endblock %}
+
+{% block sidebar %}
+<div class="content">
+    <div class="panel">
+        <div class="panel-heading">
+            Options
+        </div>
+        <a class="panel-block" href="#">
+            <span class="panel-icon">
+                <i class="fa fa-times"></i>
+            </span>
+            Delete This Tag
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+    <div class="content">
+        <form action="{{ url_for('admin_tag_save') }}" method="POST" id="tag-form">
+            {% if not editing %}
+            <label class="label">Create Tag</label>
+            {% else %}
+            <label class="label">Edit Tag {{ tag.name }}</label>
+            {% endif %}
+            <p class="control">
+                {% if not editing %}
+                <input type="text" name="tag-name" class="input" placeholder="Tag">
+                {% else %}
+                <input type="text" name="tag-name" class="input" value="{{ tag.name }}">
+                {% endif %}
+            </p>
+            <div class="has-text-right"><button class="button is-primary">Save</button></div>
+
+            {% if editing %}
+            <input type="hidden" name="tag-edit-id" value="{{ tag.id }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="box" id="preview-box" style="display:none;">
+        <div class="preview-post content">
+            <a name="view-preview"></a>
+        </div>
+    </div>
+{% endblock %}

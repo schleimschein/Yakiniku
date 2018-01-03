@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, url_for, redirect, flash, abort
 from flask_login import LoginManager, login_required, login_user, current_user, logout_user
 from jinja2 import Markup
-from models import User, Post, Settings, postgres_db
+from models import User, Post, Tag, PostTags, Settings, postgres_db
 from functools import wraps
 import json
 import bcrypt
@@ -81,7 +81,7 @@ def user_loader(uid):
 
 @app.before_first_request
 def setup_database():
-    postgres_db.create_tables([User, Post, Settings], safe=True)
+    postgres_db.create_tables([User, Post, Tag, PostTags, Settings], safe=True)
 
 @app.route('/init')
 def init_user():
@@ -153,10 +153,20 @@ def post(pid, slug=None):
 
     return render_template('post_view.html', post=post)
 
-@app.route('/tag/<tag>')
-def view_tag(tag):
-    matches = Post.select().where(Post.tags.contains(tag)).limit(5)
-    return render_template('blog_list.html', posts=matches)
+@app.route('/tag/<tag>', defaults={'page' : 1})
+@app.route('/tag/<path:tag>/<int:page>')
+def view_tag(tag, page):
+    settings = util.get_current_settings()
+
+    matches = Post.select().join(PostTags).join(Tag).where(Tag.name == (tag))
+    total_matches = matches.count()
+    matches = matches.order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
+
+    pages = Pagination(page, settings.posts_per_page, total_matches, 7)
+    print(page)
+    print([x.number for x in pages])
+#.order_by(Post.created_at.desc()).limit(5)
+    return render_template('blog_list.html', posts=matches, pages=pages)
 
 @app.route('/admin/preview', methods=["POST"])
 @login_required
@@ -179,10 +189,12 @@ def admin_edit_post(pid):
 
     try:
         post = Post.get(Post.id == pid)
+        posttag = PostTags.select().where(PostTags.post == post )
+        tag = Tag.select().join(PostTags).where(PostTags.post == post).order_by(Tag.name).get()
     except Post.DoesNotExist:
         abort(404)
 
-    return render_template('compose.html', editing=True, pid=pid, post=post)
+    return render_template('compose.html', editing=True, pid=pid, post=post, tag=tag)
 
 @app.route('/admin/posts/save', methods=["POST"])
 @login_required
@@ -199,14 +211,26 @@ def admin_save_post():
     if not edit_id:
         post = Post(title=title,
                     content=content,
-                    tags=tags,
+                    tags="whatevs",
                     slug=slug,
                     description=description,
                     posted_by=current_user.id)
         post.save()
+
+        tag = Tag(name=tags)
+        tag.save()
+
+        posttags = PostTags( post=post,
+                             tag=tag)
+        posttags.save()
+
+
+
     else:
         try:
             post = Post.get(Post.id == edit_id)
+            #posttags = Post. 
+#TODO: Get posttag by query over post
 
             post.title = title
             post.content = content
@@ -240,11 +264,87 @@ def admin_post_delete():
     if id_to_delete:
         try:
             post_to_delete = Post.get(Post.id==id_to_delete)
+            posttags_to_delete = PostTags.get(PostTags.post == post_to_delete)
+            posttags_to_delete.delete_instance()
             post_to_delete.delete_instance()
+
+
         except Post.DoesNotExist:
             abort(404)
 
     return json.dumps({ "message" : "Deleted post.", "status" : "success"})
+
+@app.route('/admin/tags')
+@login_required
+@admin_required
+def admin_tag_list():
+    return render_template('tag_list.html', tags=Tag.select().limit(20))
+
+@app.route('/admin/tags/create')
+@login_required
+@admin_required
+def admin_tag_create():
+    return render_template('edit_tag.html', tags=False)
+
+@app.route('/admin/tags/edit/<uid>')
+@login_required
+@admin_required
+def admin_tag_edit(uid):
+    try:
+        tag_to_edit = Tag.get(Tag.id == uid)
+    except Tag.DoesNotExist:
+        abort(404)
+    return render_template('edit_tag.html', editing=True, tag=tag_to_edit)
+
+@app.route('/admin/tags/save', methods=["POST"])
+@login_required
+@admin_required
+def admin_tag_save():
+    tagname = request.form.get('tag-name')
+
+    edit_id = request.form.get('tag-edit-id')
+
+    if edit_id:
+
+        try:
+            tag_to_edit = Tag.get(Tag.id == edit_id)
+
+            tag_to_edit.name = tagname
+
+            tag_to_edit.save()
+            flash("Tag edited", "success")
+        except Tag.DoesNotExist:
+            abort(404)
+
+    else:
+
+        t = Tag.create(name=tagname)
+        flash("Tag created!", "success")
+
+    return redirect(url_for('admin_tag_list'))
+
+@app.route('/admin/tags/delete', methods=["POST"])
+@login_required
+@admin_required
+def admin_tag_delete():
+    status = {}
+    status['ok'] = True
+
+    if 'id' not in request.form:
+        abort(400)
+
+    id_to_delete = request.form.get('id', None)
+
+    if id_to_delete:
+        try:
+            tag_to_delete = Tag.get(Tag.id == id_to_delete)
+            tag_to_delete.delete_instance()
+        except Tag.DoesNotExist:
+            status['ok'] = False
+
+    return json.dumps(status)
+
+
 
 @app.route('/admin/users')
 @login_required

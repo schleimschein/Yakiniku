@@ -1,4 +1,4 @@
-from peewee import PostgresqlDatabase, Model, TextField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
+from peewee import PostgresqlDatabase, Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
 from datetime import datetime
 from config import Config
 import os
@@ -56,6 +56,23 @@ class Post(Model):
 
     class Meta:
         database = postgres_db
+
+class Tag(Model):
+    name = CharField()
+    created_at = DateTimeField(default=datetime.now)
+
+    class Meta:
+        database = postgres_db
+
+class PostTags(Model):
+    post = ForeignKeyField(Post)
+    tag = ForeignKeyField(Tag)
+
+    class Meta:
+        database = postgres_db
+
+
+
 
 class Settings(Model):
 

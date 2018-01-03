@@ -4,8 +4,8 @@
 
 {% block sidebar %}
 <div class="content">
-    <div class="menu">
-        <div class="menu-label">
+    <div class="panel">
+        <div class="panel-heading">
             Options
         </div>
 
@@ -13,7 +13,7 @@
             <span class="panel-icon">
                 <i class="fa fa-plus"></i>
             </span>
-            Create New User
+            Create User
         </a>
 
         <a class="panel-block" href="javascript:void(0)" id="action-delete-user">
@@ -35,7 +35,6 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
     <table class="table is-striped">
         <thead>
             <tr>
@@ -58,7 +57,6 @@
             {% endfor %}
         </tbody>
     </table>
-</div>
 {% endblock %}
 
 {% block javascript %}

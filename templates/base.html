@@ -51,7 +51,7 @@
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
 
             <div class="navbar-brand">
-                <a class="navbar-item">
+                <a class="navbar-item" href="{{url_for('blog')}}">
                     <span class="logo-text">{{ settings.blog_title }} ::</span>
                 </a>
 
@@ -69,6 +69,10 @@
                   <a class="navbar-item is-tab{% if request.path == url_for('admin_post_list') %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
                       Posts
                   </a>
+                  <a class="navbar-item is-tab{% if request.path == url_for('admin_tag_list') %} is-active {% endif %}" href="{{ url_for('admin_tag_list') }}">
+                      Tags
+                  </a>
+
                   <a class="navbar-item is-tab{% if request.path == url_for('admin_user_list') %} is-active {% endif %}" href="{{ url_for('admin_user_list') }}">
                       Users
                   </a>
@@ -133,7 +137,7 @@
                     {% block sidebar %}
                     {% endblock %}
                 </div>
-                <div class="column content main-content-box">
+                <div class="column content">
                     {% block body %}
                     {% endblock %}
                 </div>

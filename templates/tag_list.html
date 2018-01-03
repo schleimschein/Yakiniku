@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Tag List{% endblock %}
+
+{% block sidebar %}
+<div class="content">
+    <div class="panel">
+        <div class="panel-heading">
+            Options
+        </div>
+
+        <a class="panel-block" href="{{ url_for('admin_tag_create') }}" id="action-create-tag">
+            <span class="panel-icon">
+                <i class="fa fa-plus"></i>
+            </span>
+            Create Tag
+        </a>
+
+        <a class="panel-block" href="javascript:void(0)" id="action-delete-tag">
+            <span class="panel-icon">
+                <i class="fa fa-minus"></i>
+            </span>
+            Delete Tag
+        </a>
+
+        <a class="panel-block" href="javascript:void(0)" id="action-edit-tag">
+            <span class="panel-icon">
+                <i class="fa fa-pencil"></i>
+            </span>
+            Edit Tag
+        </a>
+         <a class="panel-block" href="javascript:void(0)" id="action-show-post-of-tag">
+            <span class="panel-icon">
+                <i class="fa fa-sticky-note-o"></i>
+            </span>
+            Show Posts
+        </a>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block body %}
+    <table class="table is-striped">
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>Tag</td>
+                <td>Date Created</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tag in tags %}
+            <tr class="tag-row">
+                <td class="tag-id">{{tag.id}}</td>
+                <td class="tag-name">{{tag.name}}</td>
+                <td>{{ tag.created_at }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="has-text-centered" colspan="3"> No Tags To Display </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+$(function() {
+    var activeRow = null;
+    var activeRowId = null;
+
+    $(".tag-row").click(function(e) {
+        var row = $(this);
+
+        if (activeRow)
+            activeRow.removeClass("table-row-active")
+
+        row.addClass("table-row-active");
+        id = row.find(".tag-id").html();
+        tagName = row.find(".tag-name").html();
+        activeRow = row;
+        activeRowId = id;
+    });
+
+    $("#action-delete-tag").click(function(e) {
+        if(activeRowId)
+        {
+            if(confirm("Are you sure you want to delete tag " + activeRowId + "?"))
+            {
+                $.post("{{ url_for('admin_tag_delete') }}", { id: activeRowId }).done(function(e) {
+                    activeRow.remove();
+                })
+            }
+        }
+        else
+        {
+            alert("Select a tag to delete.");
+        }
+    });
+
+    $("#action-edit-tag").click(function(e) {
+        if(activeRowId)
+        {
+                window.location = "/admin/tags/edit/ " + activeRowId;
+        }
+        else
+        {
+            alert("Select a tag to edit");
+        }
+    });
+
+    $("#action-show-post-of-tag").click(function(e) {
+        if(activeRowId)
+        {
+
+                window.location = "/tag/" + tagName ;
+        }
+        else
+        {
+            alert("Select a tag to choose");
+        }
+    });
+
+
+});
+</script>
+{% endblock %}

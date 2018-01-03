@@ -35,7 +35,6 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
     <div class="post-form-container content">
         <form action="{{ url_for('admin_save_post') }}" method="POST" id="post-form">
             <label class="label">Post Title</label>
@@ -55,7 +54,7 @@
                 {% if not editing %}
                 <input class="input" type="text" name="post-tags" placeholder="Tags">
                 {% else %}
-                <input class="input" type="text" name="post-tags" placeholder="Tags" value="{{ post.tags }}">
+                <input class="input" type="text" name="post-tags" placeholder="Tags" value="{{ tag.name }}">
                 {% endif %}
             </p>
 
@@ -71,7 +70,6 @@
             <a name="view-preview"></a>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block javascript %}
