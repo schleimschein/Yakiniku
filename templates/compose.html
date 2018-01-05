@@ -2,6 +2,10 @@
 
 {% block title %} New Post {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
+{% endblock %}
+
 {% block sidebar %}
 <div class="content">
     <div class="panel">
@@ -49,12 +53,14 @@
             <p class="control">
                 <textarea style="height:6em" class="input" name="post-description" id="post-description-editor">{% if editing %}{{ post.description }}{% endif %}</textarea>
             </p>
-            <textarea name="post-content" id="post-content-editor">{% if editing %}{{ post.content }}{% endif %}</textarea>
+            <div class="control">
+              <textarea name="post-content" id="post-content-editor">{% if editing %}{{ post.content }}{% endif %}</textarea>
+            </div>
             <p class="control">
                 {% if not editing %}
-                <input class="input" type="text" name="post-tags" placeholder="Tags">
+                <input class="input" type="tags" name="post-tags" placeholder="Tags">
                 {% else %}
-                <input class="input" type="text" name="post-tags" placeholder="Tags" value="{{ tag.name }}">
+                <input class="input" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags %} {{tag.name}} , {% endfor %}">
                 {% endif %}
             </p>
 
@@ -73,6 +79,8 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="{{ url_for('static', filename='js/tagsinput.min.js') }}"></script>
+
 <script type="text/javascript">
 
 $(function() {

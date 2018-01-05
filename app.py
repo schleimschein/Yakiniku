@@ -29,22 +29,22 @@ def recent_post_context_processor():
     return { 'recent_posts':
             Post.select().order_by(Post.created_at.desc()).limit(settings.number_of_recent_posts)}
 
-@app.context_processor
-def top_tags_context_processor():
-    values = {}
-
-    all_tags = {}
-    for post in Post.select():
-        for tag in post.tags.split(';'):
-            if tag in all_tags:
-                all_tags[tag] += 1
-            else:
-                all_tags[tag] = 1
-
-    sorted_tags = ((k, all_tags[k]) for k in sorted(all_tags, key=all_tags.get, reverse=True))
-
-    values['top_tags'] = list(sorted_tags)[0:10]
-    return values
+# @app.context_processor
+# def top_tags_context_processor():
+#     values = {}
+#
+#     all_tags = {}
+#     for post in Post.select():
+#         for tag in post.tags.split(';'):
+#             if tag in all_tags:
+#                 all_tags[tag] += 1
+#             else:
+#                 all_tags[tag] = 1
+#
+#     sorted_tags = ((k, all_tags[k]) for k in sorted(all_tags, key=all_tags.get, reverse=True))
+#
+#     values['top_tags'] = list(sorted_tags)[0:10]
+#     return values
 
 @app.context_processor
 def settings_context_processor():
@@ -190,11 +190,12 @@ def admin_edit_post(pid):
     try:
         post = Post.get(Post.id == pid)
         posttag = PostTags.select().where(PostTags.post == post )
-        tag = Tag.select().join(PostTags).where(PostTags.post == post).order_by(Tag.name).get()
+        tags = Tag.select().join(PostTags).where(PostTags.post == post).order_by(Tag.name)
+        print(tags)
     except Post.DoesNotExist:
         abort(404)
 
-    return render_template('compose.html', editing=True, pid=pid, post=post, tag=tag)
+    return render_template('compose.html', editing=True, pid=pid, post=post, tags=tags)
 
 @app.route('/admin/posts/save', methods=["POST"])
 @login_required
@@ -206,40 +207,50 @@ def admin_save_post():
     slug = util.slugify(title)
     content = request.form.get('post-content')
     description = request.form.get('post-description')
-    tags = request.form.get('post-tags')
+    tags = list(filter(None, request.form.get('post-tags').split(',')))
 
     if not edit_id:
         post = Post(title=title,
                     content=content,
-                    tags="whatevs",
                     slug=slug,
                     description=description,
                     posted_by=current_user.id)
         post.save()
 
-        tag = Tag(name=tags)
-        tag.save()
+        for tag_name in tags:
+            tag = Tag(name=tag_name)
+            tag.save()
 
-        posttags = PostTags( post=post,
-                             tag=tag)
-        posttags.save()
-
+            posttags = PostTags( post=post, tag=tag)
+            posttags.save()
 
 
     else:
         try:
             post = Post.get(Post.id == edit_id)
-            #posttags = Post. 
-#TODO: Get posttag by query over post
-
             post.title = title
             post.content = content
             post.slug = slug
             post.description = description
-            post.tags = tags
             post.updated_at = datetime.datetime.now()
-
             post.save()
+
+            for tag_name in tags:
+                tag = Tag(name=tag_name)
+                posttags = PostTags(post=post, tag=tag)
+
+                try:
+                    tag.save()
+                except peewee.IntegrityError:
+                    pass
+
+                try:
+                    posttags.save()
+                except peewee.IntegrityError:
+                    pass
+
+
+
         except Post.DoesNotExist:
             abort(404)
 
