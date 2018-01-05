@@ -68,7 +68,7 @@
 
               {% if current_user.admin %}
                 <div class="navbar-start">
-                  <a class="navbar-item is-tab{% if request.path == url_for('admin_post_list') %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
+                  <a class="navbar-item is-tab{% if (request.path == url_for('admin_post_list') or request.path == url_for('admin_main')) %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
                       Posts
                   </a>
                   <a class="navbar-item is-tab{% if request.path == url_for('admin_tag_list') %} is-active {% endif %}" href="{{ url_for('admin_tag_list') }}">

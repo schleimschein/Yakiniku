@@ -83,6 +83,15 @@ def user_loader(uid):
 def setup_database():
     postgres_db.create_tables([User, Post, Tag, PostTags, Settings], safe=True)
 
+# @app.before_request
+# def before_request():
+#     postgres_db.connect()
+#
+# @app.after_request
+# def after_request(response):
+#     postgres_db.close()
+#     return response
+
 @app.route('/init')
 def init_user():
     try:
@@ -256,6 +265,13 @@ def admin_save_post():
 
     return redirect(url_for('admin_post_list'))
 
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_main():
+    return render_template('post_list.html', posts=Post.select())
+
+
 @app.route('/admin/posts')
 @login_required
 @admin_required
@@ -290,6 +306,7 @@ def admin_post_delete():
 @admin_required
 def admin_tag_list():
     return render_template('tag_list.html', tags=Tag.select().limit(20))
+
 
 @app.route('/admin/tags/create')
 @login_required
