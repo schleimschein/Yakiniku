@@ -49,12 +49,21 @@ class Post(Model):
     description = TextField()
     content = TextField()
     slug = TextField()
-    posted_by = ForeignKeyField(User, related_name='posts')
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
     class Meta:
         database = postgres_db
+
+class PostUser(Model):
+    post = ForeignKeyField(Post, null=True)
+    user = ForeignKeyField(User, null=True)
+
+    class Meta:
+        database = postgres_db
+        indexes = (
+            (('post', 'user'), True),  # Note the trailing comma!
+        )
 
 class Tag(Model):
     name = CharField(unique=True)
@@ -63,9 +72,9 @@ class Tag(Model):
     class Meta:
         database = postgres_db
 
-class PostTags(Model):
-    post = ForeignKeyField(Post)
-    tag = ForeignKeyField(Tag)
+class PostTag(Model):
+    post = ForeignKeyField(Post, null=True)
+    tag = ForeignKeyField(Tag, null=True)
 
     class Meta:
         database = postgres_db

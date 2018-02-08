@@ -90,8 +90,14 @@ $(function() {
             if(confirm("Are you sure you want to delete tag " + activeRowId + "?"))
             {
                 $.post("{{ url_for('admin_tag_delete') }}", { id: activeRowId }).done(function(e) {
+                  if(JSON.parse(e)["ok"] === true) {
                     activeRow.remove();
-                })
+                  }
+                  else
+                  {
+                    location.reload();
+                  }
+                });
             }
         }
         else

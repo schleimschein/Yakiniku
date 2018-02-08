@@ -4,6 +4,8 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
+
 {% endblock %}
 
 {% block sidebar %}
@@ -58,9 +60,9 @@
             </div>
             <p class="control">
                 {% if not editing %}
-                <input class="input" type="tags" name="post-tags" placeholder="Tags">
+                <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
                 {% else %}
-                <input class="input" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags %} {{tag.name}} , {% endfor %}">
+                <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}">
                 {% endif %}
             </p>
 
@@ -79,7 +81,9 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='js/tagsinput.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tagsinput_with_awesomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='js/awesomplete_with_tagsinput.js') }}"></script>
+
 
 <script type="text/javascript">
 

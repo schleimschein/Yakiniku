@@ -69,7 +69,7 @@ $(function() {
         var row = $(this);
 
         if (activeRow)
-            activeRow.removeClass("table-row-active")
+            activeRow.removeClass("table-row-active");
 
         row.addClass("table-row-active");
         id = row.find(".user-id").html();
@@ -83,8 +83,14 @@ $(function() {
             if(confirm("Are you sure you want to delete user " + activeRowId + "?"))
             {
                 $.post("{{ url_for('admin_user_delete') }}", { id: activeRowId }).done(function(e) {
+                  if(JSON.parse(e)["ok"] === true) {
                     activeRow.remove();
-                })
+                  }
+                  else
+                  {
+                    location.reload();
+                  }
+                });
             }
         }
         else

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, url_for, redirect, flash, abort
 from flask_login import LoginManager, login_required, login_user, current_user, logout_user
 from jinja2 import Markup
-from models import User, Post, Tag, PostTags, Settings, postgres_db
+from models import User, Post, PostUser, Tag, PostTag, Settings, postgres_db
 from functools import wraps
 import json
 import bcrypt
@@ -81,7 +81,7 @@ def user_loader(uid):
 
 @app.before_first_request
 def setup_database():
-    postgres_db.create_tables([User, Post, Tag, PostTags, Settings], safe=True)
+    postgres_db.create_tables([User, Post, PostUser, Tag, PostTag, Settings], safe=True)
 
 # @app.before_request
 # def before_request():
@@ -96,8 +96,16 @@ def setup_database():
 def init_user():
     try:
         User.create(name="admin", password=bcrypt.hashpw(b"password", bcrypt.gensalt()), admin=True)
+        flash("Created user: Admin", 'success')
+
     except peewee.IntegrityError:
-        pass
+        flash("User Admin already exists", 'danger')
+
+    if current_user.is_authenticated:
+        return redirect(url_for('admin_user_list'))
+    else:
+        return redirect(url_for('login'))
+
 
 @app.route('/')
 def index():
@@ -105,7 +113,10 @@ def index():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('admin_main'))
+    else:
+        return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -124,8 +135,7 @@ def do_login():
             if bcrypt.hashpw(password.encode(), u.password.encode()) == u.password.encode():
                 login_user(u)
                 requested_page = request.args.get('next')
-                print(current_user.name)
-                return redirect(requested_page or url_for('blog'))
+                return redirect(requested_page or url_for('admin_main'))
             else:
                 flash("Username or password incorrect.", "danger")
                 return redirect(url_for('login'))
@@ -141,15 +151,17 @@ def do_login():
 def blog(page):
     settings = util.get_current_settings()
 
-    posts = Post.select().order_by(Post.created_at.desc()).paginate(page,
-            settings.posts_per_page)
+    posts_with_tags = []
+    posts = Post.select().order_by(Post.created_at.desc()).paginate(page,settings.posts_per_page)
+    for post in posts:
+        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        posts_with_tags.append([post, tags])
+
 
     total_posts = Post.select().count()
     pages = Pagination(page, settings.posts_per_page, total_posts, 7)
-    print(page)
-    print([x.number for x in pages])
 
-    return render_template('blog_list.html', posts=posts, pages=pages)
+    return render_template('blog_list.html', posts_with_tags=posts_with_tags, pages=pages)
 
 @app.route('/post/<int:pid>')
 @app.route('/post/<int:pid>/<slug>')
@@ -159,7 +171,6 @@ def post(pid, slug=None):
         post = Post.get(Post.id == pid)
     except Post.DoesNotExist:
         abort(404)
-
     return render_template('post_view.html', post=post)
 
 @app.route('/tag/<tag>', defaults={'page' : 1})
@@ -167,15 +178,17 @@ def post(pid, slug=None):
 def view_tag(tag, page):
     settings = util.get_current_settings()
 
-    matches = Post.select().join(PostTags).join(Tag).where(Tag.name == (tag))
-    total_matches = matches.count()
-    matches = matches.order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
+    matches = Post.select().join(PostTag).join(Tag).where(Tag.name == (tag)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
 
+    matches_with_tags = []
+    for match in matches:
+        tags = Tag.select().join(PostTag).where(PostTag.post == match).order_by(Tag.name)
+        matches_with_tags.append([match, tags])
+
+    total_matches = matches.count()
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
-    print(page)
-    print([x.number for x in pages])
 #.order_by(Post.created_at.desc()).limit(5)
-    return render_template('blog_list.html', posts=matches, pages=pages)
+    return render_template('blog_list.html', posts_with_tags=matches_with_tags, pages=pages)
 
 @app.route('/admin/preview', methods=["POST"])
 @login_required
@@ -188,7 +201,8 @@ def preview():
 @login_required
 @admin_required
 def compose():
-    return render_template('compose.html', editing=False)
+    all_tags = Tag.select()
+    return render_template('compose.html', editing=False, all_tags=all_tags)
 
 @app.route('/admin/posts/edit/<pid>')
 @login_required
@@ -198,13 +212,12 @@ def admin_edit_post(pid):
 
     try:
         post = Post.get(Post.id == pid)
-        posttag = PostTags.select().where(PostTags.post == post )
-        tags = Tag.select().join(PostTags).where(PostTags.post == post).order_by(Tag.name)
-        print(tags)
+        tags_of_post = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        all_tags = Tag.select()
     except Post.DoesNotExist:
         abort(404)
 
-    return render_template('compose.html', editing=True, pid=pid, post=post, tags=tags)
+    return render_template('compose.html', editing=True, pid=pid, post=post, tags_of_post=tags_of_post, all_tags=all_tags)
 
 @app.route('/admin/posts/save', methods=["POST"])
 @login_required
@@ -218,23 +231,7 @@ def admin_save_post():
     description = request.form.get('post-description')
     tags = list(filter(None, request.form.get('post-tags').split(',')))
 
-    if not edit_id:
-        post = Post(title=title,
-                    content=content,
-                    slug=slug,
-                    description=description,
-                    posted_by=current_user.id)
-        post.save()
-
-        for tag_name in tags:
-            tag = Tag(name=tag_name)
-            tag.save()
-
-            posttags = PostTags( post=post, tag=tag)
-            posttags.save()
-
-
-    else:
+    if edit_id:
         try:
             post = Post.get(Post.id == edit_id)
             post.title = title
@@ -245,22 +242,31 @@ def admin_save_post():
             post.save()
 
             for tag_name in tags:
-                tag = Tag(name=tag_name)
-                posttags = PostTags(post=post, tag=tag)
+                tag, __ = Tag.get_or_create(name=tag_name)
+                posttag, __ = PostTag.get_or_create(post=post, tag=tag)
 
-                try:
-                    tag.save()
-                except peewee.IntegrityError:
-                    pass
-
-                try:
-                    posttags.save()
-                except peewee.IntegrityError:
-                    pass
-
-
+            flash("Post edited!", "success")
 
         except Post.DoesNotExist:
+            abort(404)
+
+    else:
+        try:
+            post = Post(title=title,
+                        content=content,
+                        slug=slug,
+                        description=description)
+            post.save()
+            postuser = PostUser(post=post, user = current_user.id)
+            postuser.save()
+
+            for tag_name in tags:
+                tag, __ = Tag.get_or_create(name=tag_name)
+                posttag, __ = PostTag.get_or_create(post=post, tag=tag)
+
+            flash("Post created!", "success")
+
+        except peewee.IntegrityError:
             abort(404)
 
     return redirect(url_for('admin_post_list'))
@@ -282,24 +288,36 @@ def admin_post_list():
 @login_required
 @admin_required
 def admin_post_delete():
+    status = {}
+    status['ok'] = True
 
-    id_to_delete = request.form.get("id")
-
-    if not id_to_delete:
+    if 'id' not in request.form:
         abort(400)
+
+    id_to_delete = request.form.get('id', None)
 
     if id_to_delete:
         try:
             post_to_delete = Post.get(Post.id==id_to_delete)
-            posttags_to_delete = PostTags.get(PostTags.post == post_to_delete)
-            posttags_to_delete.delete_instance()
+            posttags_to_delete = PostTag.select().where(PostTag.post == post_to_delete)
+            for posttag in posttags_to_delete:
+                posttag.delete_instance()
             post_to_delete.delete_instance()
 
-
         except Post.DoesNotExist:
-            abort(404)
+            flash("Post does not exist, please look into the sql table", "danger")
+            status['ok'] = False
 
-    return json.dumps({ "message" : "Deleted post.", "status" : "success"})
+        except peewee.IntegrityError:
+            flash("Peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
+            status['ok'] = False
+    else:
+        status['ok'] = False
+
+
+    #return json.dumps({ "message" : "Deleted post.", "status" : "success"})
+    return json.dumps(status)
+
 
 @app.route('/admin/tags')
 @login_required
@@ -328,26 +346,26 @@ def admin_tag_edit(uid):
 @login_required
 @admin_required
 def admin_tag_save():
-    tagname = request.form.get('tag-name')
 
+    tagname = request.form.get('tag-name')
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
-
         try:
             tag_to_edit = Tag.get(Tag.id == edit_id)
-
             tag_to_edit.name = tagname
-
             tag_to_edit.save()
             flash("Tag edited", "success")
+
         except Tag.DoesNotExist:
             abort(404)
 
     else:
-
-        t = Tag.create(name=tagname)
-        flash("Tag created!", "success")
+        t, created = Tag.get_or_create(name=tagname)
+        if created:
+            flash("Tag created!", "success")
+        else:
+            flash("Tag already existed!", "danger")
 
     return redirect(url_for('admin_tag_list'))
 
@@ -366,7 +384,11 @@ def admin_tag_delete():
     if id_to_delete:
         try:
             tag_to_delete = Tag.get(Tag.id == id_to_delete)
+            posttags_to_delete = PostTag.select().where(PostTag.tag == tag_to_delete )
+            for posttag in posttags_to_delete:
+                posttag.delete_instance()
             tag_to_delete.delete_instance()
+
         except Tag.DoesNotExist:
             status['ok'] = False
 
@@ -386,7 +408,7 @@ def admin_user_list():
 def admin_user_create():
     return render_template('edit_user.html', editing=False)
 
-@app.route('/admin/users/edit/<uid>')
+@app.route('/admin/users/edit/<uid>') #TODO: User is allowed to change his profile even though he isn't admin
 @login_required
 @admin_required
 def admin_user_edit(uid):
@@ -406,7 +428,6 @@ def admin_user_save():
     edit_id = request.form.get('user-edit-id')
 
     if edit_id:
-
         try:
             user_to_edit = User.get(User.id == edit_id)
 
@@ -438,13 +459,27 @@ def admin_user_delete():
     if 'id' not in request.form:
         abort(400)
 
-    id_to_delete = request.form.get('id', None)
+    id_to_delete = request.form.get('id', None) # request returns strings, not ints!
 
     if id_to_delete:
-        try:
-            user_to_delete = User.get(User.id == id_to_delete)
-            user_to_delete.delete_instance()
-        except User.DoesNotExist:
+        if (int(id_to_delete) != current_user.id):
+            try:
+                user_to_delete = User.get(User.id == id_to_delete)
+                postusers_to_delete = PostUser.select().where(PostUser.user == user_to_delete)
+                for postuser in postusers_to_delete:
+                    postuser.delete_instance()
+                user_to_delete.delete_instance()
+
+            except User.DoesNotExist:
+                flash("User does not exist, please look into the sql table", "danger")
+                status['ok'] = False
+
+            except peewee.IntegrityError:
+                flash("peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
+                status['ok'] = False
+
+        else:
+            flash("You can't delete yourself via this option. Please use your profile", "danger")
             status['ok'] = False
 
     return json.dumps(status)

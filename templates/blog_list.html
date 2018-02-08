@@ -6,20 +6,20 @@
 
 {% block body %}
 <!-- begin post box -->
-{% for post in posts %}
+{% for post,tags in posts_with_tags %}
 <div class="box blog-post-card">
     <div class="post-heading">
         <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
     </div>
-    <div class="post-subheading">
+<!--    <div class="post-subheading">
         <nav class="level">
             <div class="level-left">
                 <span class="level-item">
-                    <i class="fa fa-clock-o"></i> Posted on {{ post.created_at.strftime("%a, %d %B %Y") }} by {{ post.posted_by.name }}
+                    <i class="fa fa-clock-o"></i> Posted on
                 </span>
             </div>
         </nav>
-    </div>
+    </div> -->
     {{ post.description }}
     <nav class="level tag-bar">
         <div class="level-left">
@@ -31,10 +31,9 @@
         </div>
 
         <div class="level-right">
-            {% set tags = post.tags.split(';')  %}
             {% for tag in tags %}
-            <a href="{{ url_for('view_tag', tag=tag) }}" class="level-item tag is-info post-tag">
-                {{ tag }}
+            <a href="{{ url_for('view_tag', tag=tag.name) }}" class="level-item tag is-info post-tag">
+                {{ tag.name }}
             </a>
             {% endfor %}
         </div>
