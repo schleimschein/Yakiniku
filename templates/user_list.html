@@ -29,6 +29,12 @@
             </span>
             Edit User
         </a>
+        <a class="panel-block" href="javascript:void(0)" id="action-show-post-of-user">
+            <span class="panel-icon">
+                <i class="fa fa-sticky-note-o"></i>
+            </span>
+            Show Posts
+        </a>
 
     </div>
 </div>
@@ -40,14 +46,17 @@
             <tr>
                 <td>User ID</td>
                 <td>Name</td>
+                <td>Nr. of posts</td>
+
                 <td>Date Created</td>
             </tr>
         </thead>
         <tbody>
-            {% for user in users %}
+            {% for user in users_with_post_counts %}
             <tr class="user-row">
                 <td class="user-id">{{ user.id }}</td>
-                <td>{{ user.name }}</td>
+                <td class="user-name">{{ user.name }}</td>
+                <td class="user-post-count"> <a href="/user/{{ user.name }}">{{ user.count }}</a></td>
                 <td>{{ user.created_at }}</td>
             </tr>
             {% else %}
@@ -73,6 +82,8 @@ $(function() {
 
         row.addClass("table-row-active");
         id = row.find(".user-id").html();
+        userName = row.find(".user-name").html();
+
         activeRow = row;
         activeRowId = id;
     });
@@ -107,6 +118,18 @@ $(function() {
         else
         {
             alert("Select a user to edit");
+        }
+    });
+
+    $("#action-show-post-of-user").click(function(e) {
+        if(activeRowId)
+        {
+
+                window.location = "/user/" + userName  ;
+        }
+        else
+        {
+            alert("Select a user to choose");
         }
     });
 });

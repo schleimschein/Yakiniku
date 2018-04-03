@@ -8,7 +8,7 @@ import bcrypt
 import markdown
 import datetime
 import peewee
-import math
+from peewee import fn
 from mdx_gfm import GithubFlavoredMarkdownExtension as GithubMarkdown
 from playhouse.shortcuts import model_to_dict
 from pagination import Pagination
@@ -179,6 +179,23 @@ def view_tag(tag, page):
     settings = util.get_current_settings()
 
     matches = Post.select().join(PostTag).join(Tag).where(Tag.name == (tag)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
+
+    matches_with_tags = []
+    for match in matches:
+        tags = Tag.select().join(PostTag).where(PostTag.post == match).order_by(Tag.name)
+        matches_with_tags.append([match, tags])
+
+    total_matches = matches.count()
+    pages = Pagination(page, settings.posts_per_page, total_matches, 7)
+#.order_by(Post.created_at.desc()).limit(5)
+    return render_template('blog_list.html', posts_with_tags=matches_with_tags, pages=pages)
+
+@app.route('/user/<user>', defaults={'page' : 1})
+@app.route('/user/<path:user>/<int:page>')
+def view_user(user, page):
+    settings = util.get_current_settings()
+
+    matches = Post.select().join(PostUser).join(User).where(User.name == (user)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
     for match in matches:
@@ -400,28 +417,48 @@ def admin_tag_delete():
 @login_required
 @admin_required
 def admin_user_list():
-    return render_template('user_list.html', users=User.select().limit(20))
+    users_with_post_counts = User.select(User, fn.Count(Post.id).alias('count')) \
+        .join(PostUser, peewee.JOIN.LEFT_OUTER) \
+        .join(Post, peewee.JOIN.LEFT_OUTER) \
+        .group_by(User) \
+        .limit(20)  # JOIN.LEFT_OUTER, so that users get included that posses no posts
+                    # fn.Count().alias('count') adds count as an attribute to users
+    return render_template('user_list.html', users_with_post_counts=users_with_post_counts)
+
 
 @app.route('/admin/users/create')
 @login_required
 @admin_required
 def admin_user_create():
-    return render_template('edit_user.html', editing=False)
+    return render_template('edit_user.html', editing=False, )
 
-@app.route('/admin/users/edit/<uid>') #TODO: User is allowed to change his profile even though he isn't admin
-@login_required
-@admin_required
-def admin_user_edit(uid):
+
+def user_edit(uid):
     try:
         user_to_edit = User.get(User.id == uid)
     except User.DoesNotExist:
         abort(404)
-    return render_template('edit_user.html', editing=True, user=user_to_edit)
 
-@app.route('/admin/users/save', methods=["POST"])
+    if user_to_edit.id == current_user.id:
+        return render_template('edit_user.html', editing=True, user=user_to_edit, selfediting=True)
+    else:
+        return render_template('edit_user.html', editing=True, user=user_to_edit, selfediting=False)
+
+@app.route('/admin/users/edit/<uid>')
 @login_required
 @admin_required
-def admin_user_save():
+def admin_user_edit(uid):
+    return user_edit(uid)
+
+
+@app.route('/profile')
+@login_required
+def profile_user_edit():
+    current_user_id = current_user.id
+    return user_edit(current_user_id)
+
+
+def user_save():
     username = request.form.get('user-name')
     password = request.form.get('user-password')
     is_admin = request.form.get('user-is-admin') == 'on'
@@ -447,12 +484,33 @@ def admin_user_save():
         u = User.create(name=username, password=hashed_pw, admin=is_admin)
         flash("User created!", "success")
 
-    return redirect(url_for('admin_user_list'))
+    if is_admin:
+        return redirect(url_for('admin_user_list'))
+    else:
+        return redirect(url_for('blog'))
 
-@app.route('/admin/users/delete', methods=["POST"])
+
+@app.route('/admin/users/save', methods=["POST"])
 @login_required
 @admin_required
-def admin_user_delete():
+def admin_user_save():
+    return user_save()
+
+@app.route('/profile/save', methods=["POST"])
+@login_required
+def profile_user_save():
+
+    if 'user-edit-id' not in request.form:
+        abort(400)
+
+    id_to_save = int(request.form.get('user-edit-id', None)) # request returns strings, not ints!
+
+    if id_to_save == current_user.id:
+        return user_save()
+    elif id_to_save != current_user.id:
+        abort(400)
+
+def user_delete():
     status = {}
     status['ok'] = True
 
@@ -462,27 +520,55 @@ def admin_user_delete():
     id_to_delete = request.form.get('id', None) # request returns strings, not ints!
 
     if id_to_delete:
-        if (int(id_to_delete) != current_user.id):
-            try:
-                user_to_delete = User.get(User.id == id_to_delete)
-                postusers_to_delete = PostUser.select().where(PostUser.user == user_to_delete)
-                for postuser in postusers_to_delete:
-                    postuser.delete_instance()
-                user_to_delete.delete_instance()
+        try:
+            user_to_delete = User.get(User.id == id_to_delete)
+            postusers_to_delete = PostUser.select().where(PostUser.user == user_to_delete)
+            for postuser in postusers_to_delete:
+                postuser.delete_instance()
+            user_to_delete.delete_instance()
 
-            except User.DoesNotExist:
-                flash("User does not exist, please look into the sql table", "danger")
-                status['ok'] = False
+        except User.DoesNotExist:
+            flash("User does not exist, please look into the sql table", "danger")
+            status['ok'] = False
 
-            except peewee.IntegrityError:
-                flash("peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
-                status['ok'] = False
-
-        else:
-            flash("You can't delete yourself via this option. Please use your profile", "danger")
+        except peewee.IntegrityError:
+            flash("peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
             status['ok'] = False
 
     return json.dumps(status)
+
+@app.route('/admin/users/delete', methods=["POST"])
+@login_required
+@admin_required
+def admin_user_delete():
+    if 'id' not in request.form:
+        abort(400)
+
+    id_to_delete = int(request.form.get('id', None)) # request returns strings, not ints!
+
+    if id_to_delete == current_user.id:
+        status = {}
+        status['ok'] = False
+        flash("You can't delete yourself via this table. If you are sure you wan't to delete yourself, please use the delete option in your profile,", "danger")
+        return json.dumps(status)
+
+    elif id_to_delete != current_user.id:
+        user_delete()
+
+@app.route('/profile/delete', methods=["POST"])
+@login_required
+def profile_user_delete():
+
+    if 'id' not in request.form:
+        abort(400)
+
+    id_to_delete = int(request.form.get('id', None)) # request returns strings, not ints!
+
+    if id_to_delete == current_user.id:
+        return user_delete()
+    elif id_to_delete != current_user.id:
+        abort(400)
+
 
 @app.route('/admin/settings')
 @login_required
