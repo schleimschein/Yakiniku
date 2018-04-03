@@ -6,7 +6,9 @@
 
 {% block body %}
 <!-- begin post box -->
+
 {% for post,tags in posts_with_tags %}
+
 <div class="box blog-post-card">
     <div class="post-heading">
         <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
@@ -39,31 +41,59 @@
         </div>
     </nav>
 </div>
+
 {% else %}
-<div class="box has-text-centered">
-    <div class="content">
-        <h2>No results to show</h2>
+
+
+    <div class="container">
+      <div class="content">
+        <h2>Nothing to see here</h2>
+      </div>
     </div>
-</div>
+
 {% endfor %}
+
 <!-- end post box -->
-<nav class="pagination">
-    <a class="pagination-previous{% if pages.has_prev %} is-disabled {% endif %}"
-       href="{{ url_for('blog', page=pages[0].number-1) }}">
-      Newer
-  </a>
 
-  <a class="pagination-next {% if pages.has_next %} is-disabled {% endif %}"
-     href="{{ url_for('blog', page=pages[-1].number+1) }}">
-    Older
-  </a>
+<div class="container">
 
-  <ul class="pagination-list">
-    {% for page in pages.elements %}
-    <li>
-        <a class="pagination-link" href="{{ url_for('blog', page=page.number) }}">{{ page }}</a>
+{% if pages[0] %}
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+
+    <a class="pagination-previous" href="{{ url_for('blog', page=pages[0].number - 1) }}" {% if not pages.has_prev %} disabled {% endif %}>
+        Newer
+    </a>
+    <a class="pagination-next " href="{{ url_for('blog', page=pages[-1].number + 1) }}" {% if not pages.has_next %} disabled {% endif %}>
+      Older
+    </a>
+    <ul class="pagination-list">
+        {% for page in pages.elements %}
+        <li>
+            <a class="pagination-link" href="{{ url_for('blog', page=page.number) }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+  </nav>
+
+<!--
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+  <a class="pagination-previous" title="This is the first page" disabled>Previous</a>
+  <a class="pagination-next">Next page</a>
+  <ul class="pagination-list" >
+    <li >
+      <a class="pagination-link is-current" aria-label="Page 1" aria-current="page">1</a>
     </li>
-    {% endfor %}
+    <li>
+      <a class="pagination-link" aria-label="Goto page 2">2</a>
+    </li>
+    <li>
+      <a class="pagination-link" aria-label="Goto page 3">3</a>
+    </li>
   </ul>
 </nav>
+-->
+
+  </nav>
+  </div>
+{% endif %}
 {% endblock %}

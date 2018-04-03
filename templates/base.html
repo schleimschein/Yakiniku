@@ -147,54 +147,53 @@
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="content">
+    <footer class="footer_not_bulma" style="position:fixed;bottom:0; right:0" >
             &copy; 2017 Vegeta
-        </div>
     </footer>
-    <script src="{{ url_for('static', filename='js/jquery-3.1.0.min.js') }}"></script>
+    <!-- Bulma hasn't yet implemented a sticky footer feature. So you have to muddle your own :) -->
 
+
+
+    <script src="{{ url_for('static', filename='js/jquery-3.1.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/simplemde.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
     <script type="text/javascript">
-    $(function() {
-        $(".delete").click(function(e) {
-            $(this).parent().remove();
-        });
+      $(function() {
+          $(".delete").click(function(e) {
+              $(this).parent().remove();
+          });
 
-        $(".highlight").each(function(i, block) {
-            hljs.highlightBlock(block);
-        });
-    });
+          $(".highlight").each(function(i, block) {
+              hljs.highlightBlock(block);
+          });
+      });
 
-  document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener('DOMContentLoaded', function () {
+        // Get all "navbar-burger" elements
+        var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 
-  // Get all "navbar-burger" elements
-  var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+        // Check if there are any navbar burgers
+        if ($navbarBurgers.length > 0) {
 
-  // Check if there are any navbar burgers
-  if ($navbarBurgers.length > 0) {
+          // Add a click event on each of them
+          $navbarBurgers.forEach(function ($el) {
+            $el.addEventListener('click', function () {
 
-    // Add a click event on each of them
-    $navbarBurgers.forEach(function ($el) {
-      $el.addEventListener('click', function () {
+              // Get the target from the "data-target" attribute
+              var target = $el.dataset.target;
+              var $target = document.getElementById(target);
 
-        // Get the target from the "data-target" attribute
-        var target = $el.dataset.target;
-        var $target = document.getElementById(target);
+              // Toggle the class on both the "navbar-burger" and the "navbar-menu"
+              $el.classList.toggle('is-active');
+              $target.classList.toggle('is-active');
 
-        // Toggle the class on both the "navbar-burger" and the "navbar-menu"
-        $el.classList.toggle('is-active');
-        $target.classList.toggle('is-active');
+            });
+          });
+        }
 
       });
-    });
-  }
-
-});
-
-
     </script>
+
     {% block javascript %}
     {% endblock %}
 </body>
