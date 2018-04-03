@@ -114,7 +114,10 @@ def index():
 @app.route('/login')
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('admin_main'))
+        if current_user.admin:
+            return redirect(url_for('admin_main'))
+        elif not current_user.admin:
+            return redirect(url_for('blog'))
     else:
         return render_template('login.html')
 
@@ -135,7 +138,8 @@ def do_login():
             if bcrypt.hashpw(password.encode(), u.password.encode()) == u.password.encode():
                 login_user(u)
                 requested_page = request.args.get('next')
-                return redirect(requested_page or url_for('admin_main'))
+                default_page = url_for('admin_main') if u.admin else url_for('blog')
+                return redirect(requested_page or default_page)
             else:
                 flash("Username or password incorrect.", "danger")
                 return redirect(url_for('login'))
