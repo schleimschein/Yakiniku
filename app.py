@@ -11,6 +11,13 @@ import peewee
 from peewee import fn
 from mdx_gfm import GithubFlavoredMarkdownExtension as GithubMarkdown
 from playhouse.shortcuts import model_to_dict
+from playhouse.postgres_ext import *
+
+ext_db = PostgresqlExtDatabase('peewee_test', user='postgres')
+
+class BaseExtModel(Model):
+    class Meta:
+        database = ext_db
 from pagination import Pagination
 import util
 
@@ -211,6 +218,7 @@ def view_user(user, page):
 #.order_by(Post.created_at.desc()).limit(5)
     return render_template('blog_list.html', posts_with_tags=matches_with_tags, pages=pages)
 
+
 @app.route('/admin/preview', methods=["POST"])
 @login_required
 @admin_required
@@ -309,7 +317,7 @@ def admin_post_list():
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         user = User.select().join(PostUser, peewee.JOIN.LEFT_OUTER).where(PostUser.post == post)
         if user:
-            user=user[0]
+            user=user[0] # Accessing the first (and only) result of the query... if a postuser existed
         posts_with_user_and_tags.append([post, user, tags])
     return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags)
 

@@ -1,4 +1,5 @@
-from peewee import PostgresqlDatabase, Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
+from peewee import Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
+from playhouse.postgres_ext import PostgresqlExtDatabase # necessary for full text search
 from datetime import datetime
 from config import Config
 import os
@@ -9,8 +10,7 @@ username = db_parsed_url.username
 password = db_parsed_url.password
 database = db_parsed_url.path[1:]
 hostname = db_parsed_url.hostname
-
-postgres_db = PostgresqlDatabase(
+postgres_db = PostgresqlExtDatabase(
                 database=database,
                 user=username,
                 password=password,
