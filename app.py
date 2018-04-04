@@ -303,7 +303,15 @@ def admin_main():
 @login_required
 @admin_required
 def admin_post_list():
-    return render_template('post_list.html', posts=Post.select())
+    posts = Post.select().order_by(Post.created_at.desc())
+    posts_with_user_and_tags=[]
+    for post in posts:
+        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        user = User.select().join(PostUser, peewee.JOIN.LEFT_OUTER).where(PostUser.post == post)
+        if user:
+            user=user[0]
+        posts_with_user_and_tags.append([post, user, tags])
+    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags)
 
 @app.route('/admin/posts/delete', methods=["POST"])
 @login_required
@@ -344,7 +352,12 @@ def admin_post_delete():
 @login_required
 @admin_required
 def admin_tag_list():
-    return render_template('tag_list.html', tags=Tag.select().limit(20))
+    tags_with_post_counts = Tag.select(Tag, fn.Count(Post.id).alias('count')) \
+        .join(PostTag, peewee.JOIN.LEFT_OUTER) \
+        .join(Post, peewee.JOIN.LEFT_OUTER) \
+        .group_by(Tag) \
+        .limit(20)
+    return render_template('tag_list.html', tags=tags_with_post_counts)
 
 
 @app.route('/admin/tags/create')

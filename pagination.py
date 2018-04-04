@@ -51,8 +51,6 @@ class Pagination(object):
 
     @property
     def has_prev(self):
-        print(self.page)
-        print(self.page > 1)
         return self.page > 1
 
     def get_prev_count(self):

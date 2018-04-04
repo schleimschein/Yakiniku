@@ -39,14 +39,26 @@
             <tr>
                 <td>Post ID</td>
                 <td>Title</td>
+                <td>Tags</td>
+                <td>User</td>
                 <td>Date Posted</td>
             </tr>
         </thead>
         <tbody>
-            {% for post in posts %}
+            {% for post,user,tags in posts_with_user_and_tags %}
             <tr class="post-row">
                 <td class="post-id">{{ post.id }}</td>
                 <td><a href="{{ url_for('admin_edit_post', pid=post.id) }}">{{ post.title }}</a></td>
+                <td>
+                {% for tag in tags %}
+                  <a href="/tag/{{ tag.name }}" class="tag ">{{ tag.name}}</a>
+                {% endfor %}
+                </td>
+                {% if user %}
+                <td><a href="/user/{{user.name}}">{{ user.name}}</a></td>
+                {% elif not user %}
+                <td>Deleted</td>
+                {% endif %}
                 <td>{{ post.created_at }}</td>
             </tr>
             {% else %}
