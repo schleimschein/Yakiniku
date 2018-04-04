@@ -59,7 +59,7 @@
                 {% elif not user %}
                 <td>Deleted</td>
                 {% endif %}
-                <td>{{ post.created_at }}</td>
+                <td>{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
             </tr>
             {% else %}
             <tr>
