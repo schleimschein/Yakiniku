@@ -12,12 +12,6 @@ from peewee import fn
 from mdx_gfm import GithubFlavoredMarkdownExtension as GithubMarkdown
 from playhouse.shortcuts import model_to_dict
 from playhouse.postgres_ext import *
-
-ext_db = PostgresqlExtDatabase('peewee_test', user='postgres')
-
-class BaseExtModel(Model):
-    class Meta:
-        database = ext_db
 from pagination import Pagination
 import util
 
@@ -29,6 +23,9 @@ auth.init_app(app)
 auth.login_view = "login"
 auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
+
+# TODO: change init: user name admin -> Admin
+# TODO: Style Nothing to see here properly
 
 @app.context_processor
 def recent_post_context_processor():
@@ -259,6 +256,7 @@ def admin_save_post():
     content = request.form.get('post-content')
     description = request.form.get('post-description')
     tags = list(filter(None, request.form.get('post-tags').split(',')))
+    publish = True if request.form.get('post-publish') == 'on' else False
 
     if edit_id:
         try:
@@ -268,6 +266,7 @@ def admin_save_post():
             post.slug = slug
             post.description = description
             post.updated_at = datetime.datetime.now()
+            post.published = publish
             post.save()
 
             for tag_name in tags:
@@ -284,7 +283,8 @@ def admin_save_post():
             post = Post(title=title,
                         content=content,
                         slug=slug,
-                        description=description)
+                        description=description,
+                        published=publish)
             post.save()
             postuser = PostUser(post=post, user = current_user.id)
             postuser.save()
@@ -337,17 +337,19 @@ def admin_post_delete():
         try:
             post_to_delete = Post.get(Post.id==id_to_delete)
             posttags_to_delete = PostTag.select().where(PostTag.post == post_to_delete)
-            for posttag in posttags_to_delete:
-                posttag.delete_instance()
+            for posttag_to_delete in posttags_to_delete:
+                posttag_to_delete.delete_instance()
+            postuser_to_delete = PostUser.select().where(PostUser.post == post_to_delete)[0]
+            postuser_to_delete.delete_instance()
             post_to_delete.delete_instance()
 
         except Post.DoesNotExist:
             flash("Post does not exist, please look into the sql table", "danger")
             status['ok'] = False
 
-        except peewee.IntegrityError:
-            flash("Peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
-            status['ok'] = False
+#       except peewee.IntegrityError:
+#           flash("Peewee.IntegrityError there seems to be a foreign key constraint error", "danger")
+#           status['ok'] = False
     else:
         status['ok'] = False
 

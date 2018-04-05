@@ -1,5 +1,5 @@
-from peewee import Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
-from playhouse.postgres_ext import PostgresqlExtDatabase # necessary for full text search
+from peewee import PostgresqlDatabase, Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
+#from playhouse.postgres_ext import PostgresqlExtDatabase # necessary for full text search
 from datetime import datetime
 from config import Config
 import os
@@ -10,7 +10,7 @@ username = db_parsed_url.username
 password = db_parsed_url.password
 database = db_parsed_url.path[1:]
 hostname = db_parsed_url.hostname
-postgres_db = PostgresqlExtDatabase(
+postgres_db = PostgresqlDatabase(
                 database=database,
                 user=username,
                 password=password,
@@ -49,8 +49,10 @@ class Post(Model):
     description = TextField()
     content = TextField()
     slug = TextField()
+    published = BooleanField(default=False)
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
+
 
     class Meta:
         database = postgres_db

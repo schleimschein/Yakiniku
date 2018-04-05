@@ -40,6 +40,7 @@
                 <td>Post ID</td>
                 <td>Title</td>
                 <td>Tags</td>
+                <td>Published</td>
                 <td>User</td>
                 <td>Date Posted</td>
             </tr>
@@ -53,6 +54,7 @@
                 {% for tag in tags %}
                   <a href="/tag/{{ tag.name }}" class="tag ">{{ tag.name}}</a>
                 {% endfor %}
+                <td><span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span></td>
                 </td>
                 {% if user %}
                 <td><a href="/user/{{user.name}}">{{ user.name}}</a></td>
