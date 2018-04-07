@@ -293,7 +293,10 @@ def admin_save_post():
                 tag, __ = Tag.get_or_create(name=tag_name)
                 posttag, __ = PostTag.get_or_create(post=post, tag=tag)
 
-            flash("Post created!", "success")
+            if publish:
+                flash("Post published!", "success")
+            elif not publish:
+                flash("Post saved as draft!", "success")
 
         except peewee.IntegrityError:
             abort(404)

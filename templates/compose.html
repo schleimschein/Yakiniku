@@ -18,18 +18,11 @@
             Options
         </div>
 
-        <a class="panel-block" href="#">
+        <a class="panel-block" id="action-draft">
             <span class="panel-icon">
                 <i class="fa fa-book"></i>
             </span>
             Save as Draft
-        </a>
-
-        <a class="panel-block" href="#">
-            <span class="panel-icon">
-                <i class="fa fa-hourglass-start"></i>
-            </span>
-            Schedule Publication
         </a>
 
         <a class="panel-block" href="#view-preview" id="action-preview">
@@ -73,18 +66,18 @@
             <label class="label"> Status</label>
             <p class="control">
             {% if not editing %}
-              <input class="switch is-primary " id="PublishSwitch" type="checkbox" name="post-publish" checked="checked">
+              <input class="switch is-primary " id="post-publish-switch" type="checkbox" name="post-publish" checked="checked">
             {% else %}
-              <input class="switch is-primary" id="PublishSwitch" type="checkbox" name="post-publish" {% if post.published %} checked="checked" {% endif %}>
+              <input class="switch is-primary" id="post-publish-switch" type="checkbox" name="post-publish" {% if post.published %} checked="checked" {% endif %}>
             {% endif %}
-              <label class="label" for="PublishSwitch">Publish</label>
+              <label class="label" id="post-publish-switch-label" for="post-publish-switch">Publish</label>
             </p>
 
             {% if editing %}
                 <input type="hidden" name="post-edit-id" value="{{ post.id }}">
             {% endif %}
 
-            <div class="has-text-right"><button class="button is-primary is-large">Post</button></div>
+            <div class="has-text-right"><button id="post-submit-button" class="button is-primary is-large">Post</button></div>
         </form>
     </div>
 
@@ -103,7 +96,17 @@
 <script type="text/javascript">
 
 $(function() {
+    var postForm = document.getElementById('post-form');
     var postEditor = new SimpleMDE({ element: document.getElementById("post-content-editor")});
+    var postPublishSwitch = document.getElementById('post-publish-switch');
+    var postPublishSwitchLabel = document.getElementById('post-publish-switch-label');
+
+    var postSubmitButton = document.getElementById('post-submit-button');
+
+    $("#action-draft").click(function(e) {
+        postPublishSwitch.checked = false;
+        postForm.submit();
+    });
 
     $("#action-preview").click(function(e) {
         postData = { }
@@ -115,6 +118,15 @@ $(function() {
             $("#preview-box").show();
         });
     });
+
+    $("#post-publish-switch").click(function(e) {
+            postSubmitButton.innerHTML = postPublishSwitch.checked ? "Post" : "Save";
+            postPublishSwitchLabel.innerHTML = postPublishSwitch.checked ? "Publish" : "Draft";
+    });
+
+
 });
+
+
 </script>
 {% endblock %}
