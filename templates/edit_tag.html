@@ -26,6 +26,9 @@
             {% else %}
             <label class="label">Edit Tag {{ tag.name }}</label>
             {% endif %}
+
+
+            #TODO: Use awesomplete to detect wheter Tag already exists
             <p class="control">
                 {% if not editing %}
                 <input type="text" name="tag-name" class="input" placeholder="Tag">

@@ -24,7 +24,6 @@ auth.login_view = "login"
 auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
-# TODO: change init: user name admin -> Admin
 # TODO: Style Nothing to see here properly
 
 @app.context_processor
@@ -100,7 +99,7 @@ def setup_database():
 def init_user():
     try:
         User.create(name="admin", password=bcrypt.hashpw(b"password", bcrypt.gensalt()), admin=True)
-        flash("Created user: Admin", 'success')
+        flash("Created user: admin", 'success')
 
     except peewee.IntegrityError:
         flash("User Admin already exists", 'danger')
@@ -161,7 +160,8 @@ def blog(page):
 
     posts_with_tags = []
     posts = Post.select().order_by(Post.created_at.desc()).paginate(page,settings.posts_per_page)
-    for post in posts:
+    published_posts = filter(lambda post: post.published, posts)
+    for post in published_posts:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
 

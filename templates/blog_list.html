@@ -7,55 +7,41 @@
 {% block body %}
 <!-- begin post box -->
 
-{% for post,tags in posts_with_tags %}
-
-<div class="box blog-post-card">
-    <div class="post-heading">
-        <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
-    </div>
-<!--    <div class="post-subheading">
-        <nav class="level">
+{% for post,tags in posts_with_tags%}
+    <div class="box blog-post-card">
+        <div class="post-heading">
+            <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
+        </div>
+    <!--    <div class="post-subheading">
+            <nav class="level">
+                <div class="level-left">
+                    <span class="level-item">
+                        <i class="fa fa-clock-o"></i> Posted on
+                    </span>
+                </div>
+            </nav>
+        </div> -->
+        {{ post.description }}
+        <nav class="level tag-bar">
             <div class="level-left">
-                <span class="level-item">
-                    <i class="fa fa-clock-o"></i> Posted on
+
+                <span class="icon is-small level-item">
+                    <i class="fa fa-tags"></i>
                 </span>
+
+            </div>
+
+            <div class="level-right">
+                {% for tag in tags %}
+                <a href="{{ url_for('view_tag', tag=tag.name) }}" class="level-item tag is-info post-tag">
+                    {{ tag.name }}
+                </a>
+                {% endfor %}
             </div>
         </nav>
-    </div> -->
-    {{ post.description }}
-    <nav class="level tag-bar">
-        <div class="level-left">
-
-            <span class="icon is-small level-item">
-                <i class="fa fa-tags"></i>
-            </span>
-
-        </div>
-
-        <div class="level-right">
-            {% for tag in tags %}
-            <a href="{{ url_for('view_tag', tag=tag.name) }}" class="level-item tag is-info post-tag">
-                {{ tag.name }}
-            </a>
-            {% endfor %}
-        </div>
-    </nav>
-</div>
-
-{% else %}
-
-
-    <div class="container">
-      <div class="content">
-        <h1 class="title">Nothing to see here</h1>
-      </div>
     </div>
 
-{% endfor %}
-
-<!-- end post box -->
-
-{% if pages[0] %}
+  {% if pages[0] %}
   <nav class="pagination is-centered" role="navigation" aria-label="pagination">
 
     <a class="pagination-previous" href="{{ url_for('blog', page=pages[0].number - 1) }}" {% if not pages.has_prev %} disabled {% endif %}>
@@ -74,4 +60,21 @@
   </nav>
 
 {% endif %}
+
+
+
+
+
+{% else %}
+<div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
+  <div class="content has-text-centered">
+        <h1 class="title">Nothing to see here</h1>
+  </div>
+</div>
+
+
+{% endfor %}
+
+<!-- end post box -->
+
 {% endblock %}

@@ -49,7 +49,7 @@
     {% endblock %}
 </head>
 
-<body>
+<body style="display:flex; flex-flow: column; flex-direction: column; min-height:100vh;">
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
 
             <div class="navbar-brand">
@@ -124,8 +124,8 @@
         </nav>
 
 
-    <section class="section main-section">
-        <div class="container is-fluid body-container">
+    <section class="section main-section" style="flex:1; display:flex; flex-flow: column;">
+        <div class="container is-desktop body-container" style="flex:1; display:flex; flex-flow: column;">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                 <div class="notification is-{{ category }}">
@@ -134,12 +134,12 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="columns is-desktop main-content">
+            <div class="columns main-content" style="flex:1; align-items:stretch">
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
                     {% endblock %}
                 </div>
-                <div class="column content">
+                <div class="column content" style="flex:1;display:flex; flex-flow: column;">
                     {% block body %}
                     {% endblock %}
                 </div>
@@ -147,8 +147,10 @@
         </div>
     </section>
 
-    <footer class="footer_not_bulma" style="position:fixed;bottom:0; right:0" >
-            &copy; 2017 Vegeta
+    <footer class="footer_not_bulma">
+      <div class="content has-text-right">
+            &copy; 2018 Vegeta
+      </div>
     </footer>
     <!-- Bulma hasn't yet implemented a sticky footer feature. So you have to muddle your own :) -->
 
