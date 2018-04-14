@@ -121,3 +121,34 @@ html {
     list-style-type: none;
     list-style: none;
 }
+
+.control.has-icons-left .input{
+    border:none;
+    background:transparent;
+    padding-left:1.26rem;
+    width:0px;
+   -webkit-transition: all .5s ease;
+   -moz-transition: all .5s ease;
+   transition: all .5s ease;
+}
+
+.control.has-icons-left .icon {
+    border:none;
+    color: #424242;
+    background:transparent;
+    pointer-events: none;
+}
+
+.control.has-icons-left .input:focus {
+    padding-left:2.26rem;
+    background:white;
+    width:200px;
+}
+
+.control.has-icons-left .icon:hover + {
+
+}
+
+.control.has-icons-left .input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}

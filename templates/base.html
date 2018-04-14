@@ -40,7 +40,7 @@
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
     <!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css" media="all">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
@@ -91,12 +91,29 @@
               -->
 
               <div class="navbar-end">
+
                   <a class="navbar-item {% if request.path == settings.icon_1_link %} is-active {% endif %}" href="{{settings.icon_1_link}}">
                       <i class="fa fa-{{settings.icon_1_icon_type}}"></i>
                   </a>
                   <a class="navbar-item {% if request.path == settings.icon_2_link %} is-active {% endif %}" href="{{settings.icon_2_link}}">
                       <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
                   </a>
+              <div class="navbar-item">
+                  <form action="{{ url_for('search') }}" method="post" name="search" id="search_form">
+
+                      <div class="control has-icons-left" id="search_control">
+                        <input class="input is-rounded" id="search_input" type="search" name="search-input">
+                        <a class="icon is-left" id="search_icon" href="{{ url_for('search') }}">
+                          <i class="fa fa-search"></i>
+                        </a>
+                      </div>
+
+                  </form>
+                </div>
+
+              </div>
+
+                  </div>
 
                   {% if current_user.is_authenticated %}
                     <div class="navbar-item has-dropdown is-hoverable">
@@ -114,10 +131,6 @@
                             <!-- <i class="fa fa-caret-down"></i> -->
                       </div>
                     </div>
-                  {% else %}
-                    <div class="navbar-item">
-                      <input class="input" type="text" placeholder="Search">
-                    </div>
                   {% endif %}
               </div>
             </div>
@@ -128,7 +141,7 @@
         <div class="container is-desktop body-container" style="flex:1; display:flex; flex-flow: column;">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
-                <div class="notification is-{{ category }}">
+                <div class="notification is-{{ category }} has-delete">
                     <button class="delete"></button>
                     {{ message }}
                 </div>
@@ -159,16 +172,62 @@
     <script src="{{ url_for('static', filename='js/jquery-3.1.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/simplemde.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
-    <script type="text/javascript">
-      $(function() {
-          $(".delete").click(function(e) {
-              $(this).parent().remove();
-          });
 
-          $(".highlight").each(function(i, block) {
-              hljs.highlightBlock(block);
-          });
+    <script type="text/javascript">
+
+      $(function() {
+
+
+        var deleteContainers  = document.getElementsByClassName('has-delete');
+        for(var i = 0; i < deleteContainers.length; i++)
+        {
+            var deleteContainer = deleteContainers[i];
+            var deletes = deleteContainer.getElementsByClassName('delete');
+
+            for(var i = 0; i < deletes.length; i++)
+            {
+              var dlt = deletes[i];
+
+              dlt.onclick = function()
+              {
+                  deleteContainer.remove();
+              }
+            }
+        }
+
+
+        var searchForm = document.getElementById('search_form');
+        var searchControl = document.getElementById('search_control');
+        var searchInput = document.getElementById('search_input');
+        var searchIcon = document.getElementById('search_icon');
+
+        searchInput.onfocus = function(e)
+        {
+            searchIcon.style.pointerEvents = "auto";
+        };
+
+        searchInput.onblur = function(e)
+        {
+          if(e.relatedTarget === searchIcon)
+          {
+            searchForm.submit();
+          }
+          else {
+            searchIcon.style.pointerEvents = "none";
+          }
+        };
+
+
+        $(".highlight").each(function(i, block)
+        {
+            hljs.highlightBlock(block);
+        });
+
+
       });
+
+
+
 
       document.addEventListener('DOMContentLoaded', function () {
         // Get all "navbar-burger" elements

@@ -24,7 +24,8 @@ auth.login_view = "login"
 auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
-# TODO: Style Nothing to see here properly
+# TODO: Tag and User Blog needs to filtered by published
+# TODO: Filter Posts with regards to published via SQL!
 
 @app.context_processor
 def recent_post_context_processor():
@@ -214,6 +215,24 @@ def view_user(user, page):
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
 #.order_by(Post.created_at.desc()).limit(5)
     return render_template('blog_list.html', posts_with_tags=matches_with_tags, pages=pages)
+
+@app.route('/search/query', methods=["POST"])
+def search():
+    page=1
+    query = request.form.get('search-input')
+    posts = Post.select().where((Post.published == True) & Match(Post.content, query))
+    posts_with_tags = []
+
+    settings = util.get_current_settings()
+
+    for post in posts:
+        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        posts_with_tags.append([post, tags])
+
+    total_posts = Post.select().count()
+    pages = Pagination(page, settings.posts_per_page, total_posts, 7)
+
+    return render_template('blog_list.html', posts_with_tags=posts_with_tags, pages=pages)
 
 
 @app.route('/admin/preview', methods=["POST"])
