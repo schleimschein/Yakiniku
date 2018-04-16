@@ -201,14 +201,26 @@
         var searchInput = document.getElementById('search_input');
         var searchIcon = document.getElementById('search_icon');
 
-        searchInput.onfocus = function(e)
+        searchInput.onkeyup = function(e)
         {
+          if(searchInput.value.trim() !== "")
+          {
             searchIcon.style.pointerEvents = "auto";
+          }
+            else if(searchInput.value.trim() === "")
+          {
+            searchIcon.style.pointerEvents = "none";
+          }
+
+          if (e.keyCode == 27)
+          {//27 is the code for escape
+            searchInput.blur();
+          }
         };
 
         searchInput.onblur = function(e)
         {
-          if(e.relatedTarget === searchIcon)
+          if( (e.relatedTarget === searchIcon) && searchInput.value.trim() !== "")
           {
             searchForm.submit();
           }

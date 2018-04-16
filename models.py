@@ -1,8 +1,7 @@
-from peewee import PostgresqlDatabase, Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField
+from peewee import PostgresqlDatabase, Model, TextField, CharField, DateTimeField, ForeignKeyField, BooleanField, IntegerField, SQL
 from playhouse.postgres_ext import PostgresqlExtDatabase # necessary for full text search
 from datetime import datetime
 from config import Config
-import os
 import urllib.parse
 
 db_parsed_url = urllib.parse.urlparse(Config.DATABASE_URL)
@@ -54,9 +53,9 @@ class Post(Model):
     created_at = DateTimeField(default=datetime.now)
     updated_at = DateTimeField(default=datetime.now)
 
-
     class Meta:
         database = postgres_db
+# Adding gin index to Post.content before first request
 
 class PostUser(Model):
     post = ForeignKeyField(Post, null=True)
@@ -74,6 +73,8 @@ class Tag(Model):
 
     class Meta:
         database = postgres_db
+# Adding gin index to Tag.name before first request
+
 
 class PostTag(Model):
     post = ForeignKeyField(Post, null=True)

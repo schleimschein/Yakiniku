@@ -7,73 +7,79 @@
 {% block body %}
 <!-- begin post box -->
 
-{% for post,tags in posts_with_tags%}
-    <div class="box blog-post-card">
-        <div class="post-heading">
-            <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
-        </div>
-    <!--    <div class="post-subheading">
-            <nav class="level">
-                <div class="level-left">
-                    <span class="level-item">
-                        <i class="fa fa-clock-o"></i> Posted on
-                    </span>
-                </div>
-            </nav>
-        </div> -->
-        {{ post.content }}
-        <nav class="level tag-bar">
-            <div class="level-left">
+  {% if query and posts_with_tags %}
+  <p class="title is-3">Search results for {{ query }} </p>
+  {% elif query and not posts_with_tags %}
+  <p class="title is-3">No search results for {{ query }} :( </p>
+  {% endif %}
 
-                <span class="icon is-small level-item">
-                    <i class="fa fa-tags"></i>
-                </span>
+  {% for post,tags in posts_with_tags%}
+      <div class="box blog-post-card">
+          <div class="post-heading">
+              <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
+          </div>
+      <!--    <div class="post-subheading">
+              <nav class="level">
+                  <div class="level-left">
+                      <span class="level-item">
+                          <i class="fa fa-clock-o"></i> Posted on
+                      </span>
+                  </div>
+              </nav>
+          </div> -->
+          {{ post.content }}
+          <nav class="level tag-bar">
+              <div class="level-left">
 
-            </div>
+                  <span class="icon is-small level-item">
+                      <i class="fa fa-tags"></i>
+                  </span>
 
-            <div class="level-right">
-                {% for tag in tags %}
-                <a href="{{ url_for('view_tag', tag=tag.name) }}" class="level-item tag is-info post-tag">
-                    {{ tag.name }}
-                </a>
-                {% endfor %}
-            </div>
-        </nav>
+              </div>
+
+              <div class="level-right">
+                  {% for tag in tags %}
+                  <a href="{{ url_for('view_tag', tag=tag.name) }}" class="level-item tag is-info post-tag">
+                      {{ tag.name }}
+                  </a>
+                  {% endfor %}
+              </div>
+          </nav>
     </div>
 
 
-{% else %}
-<div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
-  <div class="content has-text-centered">
-        <h1 class="title">Nothing to see here</h1>
+  {% else %}
+  <div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
+    <div class="content has-text-centered">
+          <h1 class="title">Nothing to see here</h1>
+    </div>
   </div>
-</div>
 
 
-{% endfor %}
+  {% endfor %}
 
-{% if pages[0] %}
-<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+  {% if pages[0] %}
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
 
-  <button class="pagination-previous" href="{{ url_for('blog', page=pages[0].number - 1) }}" {% if not pages.has_prev %} disabled="disabled" {% endif %}>
-      Newer
-  </button>
-  <button class="pagination-next " href="{{ url_for('blog', page=pages[-1].number + 1) }}" {% if not pages.has_next %} disabled="disabled" {% endif %}>
-    Older
-  </button>
-  <ul class="pagination-list">
-      {% for page in pages.elements %}
-      <li>
-          <a class="pagination-link" href="{{ url_for('blog', page=page.number) }}">{{ page }}</a>
-      </li>
-      {% endfor %}
+    <button class="pagination-previous" href="{{ url_for('blog', page=pages[0].number - 1) }}" {% if not pages.has_prev %} disabled="disabled" {% endif %}>
+        Newer
+    </button>
+    <button class="pagination-next " href="{{ url_for('blog', page=pages[-1].number + 1) }}" {% if not pages.has_next %} disabled="disabled" {% endif %}>
+      Older
+    </button>
+    <ul class="pagination-list">
+        {% for page in pages.elements %}
+        <li>
+            <a class="pagination-link" href="{{ url_for('blog', page=page.number) }}">{{ page }}</a>
+        </li>
+        {% endfor %}
 
 
-  </ul>
-</nav>
+    </ul>
+  </nav>
 
-{% endif %}
+  {% endif %}
 
-<!-- end post box -->
+  <!-- end post box -->
 
 {% endblock %}

@@ -7,14 +7,14 @@ Don't forget to change SECRET_KEY in config.py if you deploy this on your own se
 ## Features
 
 * Minimal
-* Swag
+* :metal
 * Post tagging
 
 Local Development
 ------------------
-Set environment variable DATABASE_URL to point to a valid postgresql instance.
+Set environment variable TRUNKS_DATABASE_URL to point to a valid postgresql database instance, which has the **hstore** extension installed
 
-    export TRUNKS_DATABASE_URL=postgresql://localhost/[yourdatabase]
+    export TRUNKS_DATABASE_URL=postgresql://[username]:[password]@localhost/[yourdatabase]
 
 Then run:
 
@@ -24,3 +24,4 @@ to start a development server.
 
 Browse to http://127.0.0.1:5000/init in order to create the first admin user with username: admin and pw: password .
 Once logged-in you can then change the credentials and create more users. Make sure to comment the according method in app.py when you take your blog to production!
+

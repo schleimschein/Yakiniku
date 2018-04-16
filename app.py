@@ -8,7 +8,6 @@ import bcrypt
 import markdown
 import datetime
 import peewee
-from peewee import fn
 from mdx_gfm import GithubFlavoredMarkdownExtension as GithubMarkdown
 from playhouse.shortcuts import model_to_dict
 from playhouse.postgres_ext import *
@@ -87,6 +86,13 @@ def user_loader(uid):
 def setup_database():
     postgres_db.create_tables([User, Post, PostUser, Tag, PostTag, Settings], safe=True)
 
+    # Adding gin index to Post.content and Tag.name for faster search
+    language = 'english'
+
+    Post.add_index(SQL('CREATE INDEX post_full_text_search ON post USING gin(to_tsvector(\'' + language + '\',content))'))
+    Tag.add_index(SQL('CREATE INDEX tag_full_text_search ON tag USING gin(to_tsvector(\'' + language + '\', name))'))
+
+
 # @app.before_request
 # def before_request():
 #     postgres_db.connect()
@@ -103,7 +109,7 @@ def init_user():
         flash("Created user: admin", 'success')
 
     except peewee.IntegrityError:
-        flash("User Admin already exists", 'danger')
+        flash("User admin already exists", 'danger')
 
     if current_user.is_authenticated:
         return redirect(url_for('admin_user_list'))
@@ -219,20 +225,23 @@ def view_user(user, page):
 @app.route('/search/query', methods=["POST"])
 def search():
     page=1
-    query = request.form.get('search-input')
-    posts = Post.select().where((Post.published == True) & Match(Post.content, query))
+    query = '\'' + request.form.get('search-input') + '\''
+    posts_matched_content = Post.select().where((Post.published == True) & Match(Post.content, query))
+    posts_matched_tag = Post.select().join(PostTag).join(Tag).where((Post.published == True) & Match(Tag.name, query) & (Match(Post.content, query) == False) )
+    posts_matched = posts_matched_content + posts_matched_tag
+
     posts_with_tags = []
 
     settings = util.get_current_settings()
 
-    for post in posts:
+    for post in posts_matched:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
 
     total_posts = Post.select().count()
     pages = Pagination(page, settings.posts_per_page, total_posts, 7)
 
-    return render_template('blog_list.html', posts_with_tags=posts_with_tags, pages=pages)
+    return render_template('blog_list.html', posts_with_tags=posts_with_tags, pages=pages, query=query)
 
 
 @app.route('/admin/preview', methods=["POST"])

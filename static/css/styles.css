@@ -139,14 +139,22 @@ html {
     pointer-events: none;
 }
 
+.control.has-icons-left .input:focus ~ .icon,
+.control.has-icons-left .select:focus ~ .icon, .control.has-icons-right .input:focus ~ .icon,
+.control.has-icons-right .select:focus ~ .icon{
+    color: #424242;
+}
+
+.control.has-icons-left .input:focus ~ .icon:hover,
+.control.has-icons-left .select:focus ~ .icon:hover, .control.has-icons-right .input:focus ~ .icon:hover,
+.control.has-icons-right .select:focus ~ .icon:hover {
+color: hsl(217, 71%, 53%);
+}
+
 .control.has-icons-left .input:focus {
     padding-left:2.26rem;
     background:white;
     width:200px;
-}
-
-.control.has-icons-left .icon:hover + {
-
 }
 
 .control.has-icons-left .input[type="search"]::-webkit-search-cancel-button {
