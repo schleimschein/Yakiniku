@@ -23,8 +23,19 @@ auth.login_view = "login"
 auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
+# TODO: Edit link in blog posts if admin
+# TODO: Description of post in table
+# TODO: Admin tables in page scrollable
 # TODO: Tag and User Blog needs to filtered by published
 # TODO: Filter Posts with regards to published via SQL!
+# TODO: Muddle awesomplete and tagsinput into one ! C L E A N ! function
+# TODO: Awesomplete and tagsinput in Tag edit
+# TODO: Refactor: everything
+# TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
+# TODO: Refactor: Structure of CSS
+# TODO: Refactor: Structure of app.py
+# TODO: Refactor: SQL Queries
+# TODO: Minize static components
 
 @app.context_processor
 def recent_post_context_processor():
@@ -184,9 +195,13 @@ def post(pid, slug=None):
     post = None
     try:
         post = Post.get(Post.id == pid)
+        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        user = User.select().join(PostUser, peewee.JOIN.LEFT_OUTER).where(PostUser.post == post)
+        if user:
+            user = user[0]
     except Post.DoesNotExist:
         abort(404)
-    return render_template('post_view.html', post=post)
+    return render_template('post_view.html', post=post, tags=tags, user=user)
 
 @app.route('/tag/<tag>', defaults={'page' : 1})
 @app.route('/tag/<path:tag>/<int:page>')

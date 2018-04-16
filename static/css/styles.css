@@ -160,3 +160,18 @@ color: hsl(217, 71%, 53%);
 .control.has-icons-left .input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
+
+.post_icons{
+    position:relative;
+    top: calc(-1.5rem + 0.1875em); /* Default icon size is 1.5rem x 1.5rem and margin of icons in buttons is 0.1875em */
+    right: calc(-1.5rem + 0.1875em);
+}
+
+.post_icons .icon{
+    color: #424242;
+}
+
+.post_icons .icon:hover
+{
+    color: hsl(217, 71%, 53%);
+}

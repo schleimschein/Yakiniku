@@ -11,7 +11,7 @@
         </div>
     </div>
     <h1>{{ post.title }}</h1>
-    <h5>by {{ post.posted_by.name }} on {{ post.created_at.strftime("%B %d, %Y") }}</h5>
+    <h5>Posted{% if user  %} by {{ user.name }}{% endif %} on {{ post.created_at.strftime("%B %d, %Y") }}</h5>
     <div class="content post-content">
         {{ post.content|Markdown }}
     </div>

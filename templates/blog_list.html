@@ -15,9 +15,20 @@
 
   {% for post,tags in posts_with_tags%}
       <div class="box blog-post-card">
+        <span class="content is-pulled-right post_icons">
+          {% if current_user.admin %}
+         <a class="icon" href="{{ url_for('admin_edit_post', pid=post.id) }}">
+            <i class="fa fa-pencil"></i>
+          </a>
+          {% endif %}
+        </span>
+
           <div class="post-heading">
               <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
           </div>
+
+
+
       <!--    <div class="post-subheading">
               <nav class="level">
                   <div class="level-left">
