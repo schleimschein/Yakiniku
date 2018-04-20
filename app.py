@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, flash, abort
+from flask import Flask, render_template, request, url_for, redirect, flash, abort, jsonify
 from flask_login import LoginManager, login_required, login_user, current_user, logout_user
 from jinja2 import Markup
 from models import User, Post, PostUser, Tag, PostTag, Settings, postgres_db
@@ -23,9 +23,7 @@ auth.login_view = "login"
 auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
-# TODO: Edit link in blog posts if admin
-# TODO: Description of post in table
-# TODO: Admin tables in page scrollable
+# TODO: Admin tables scrollable
 # TODO: Tag and User Blog needs to filtered by published
 # TODO: Filter Posts with regards to published via SQL!
 # TODO: Muddle awesomplete and tagsinput into one ! C L E A N ! function
@@ -36,6 +34,7 @@ auth.login_message_category = "danger"
 # TODO: Refactor: Structure of app.py
 # TODO: Refactor: SQL Queries
 # TODO: Minize static components
+
 
 @app.context_processor
 def recent_post_context_processor():
@@ -172,13 +171,13 @@ def do_login():
     return redirect(url_for('login'))
 
 @app.route('/blog', defaults={'page' : 1})
+@app.route('/blog/archive', defaults={'page' : 1})
 @app.route('/blog/archive/<int:page>')
 def blog(page):
     settings = util.get_current_settings()
 
     posts_with_tags = []
-    posts = Post.select().order_by(Post.created_at.desc()).paginate(page,settings.posts_per_page)
-    published_posts = filter(lambda post: post.published, posts)
+    published_posts = Post.select().where(Post.published).order_by(Post.created_at.desc()).paginate(page,settings.posts_per_page)
     for post in published_posts:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
@@ -208,7 +207,7 @@ def post(pid, slug=None):
 def view_tag(tag, page):
     settings = util.get_current_settings()
 
-    matches = Post.select().join(PostTag).join(Tag).where(Tag.name == (tag)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
+    matches = Post.select().where(Post.published).join(PostTag).join(Tag).where(Tag.name == (tag)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
     for match in matches:
@@ -225,7 +224,7 @@ def view_tag(tag, page):
 def view_user(user, page):
     settings = util.get_current_settings()
 
-    matches = Post.select().join(PostUser).join(User).where(User.name == (user)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
+    matches = Post.select().where(Post.published).join(PostUser).join(User).where(User.name == (user)).order_by(Post.created_at.desc()).paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
     for match in matches:
@@ -263,8 +262,10 @@ def search():
 @login_required
 @admin_required
 def preview():
-    html = markdown.markdown(request.form['post-content'], extensions=[GithubMarkdown()])
-    return html
+    html = markdown.markdown(request.form['post_content_as_markdown'], extensions=[GithubMarkdown()])
+    date_time = datetime.datetime.now().strftime("%B %d, %Y")
+    print(date_time)
+    return jsonify(html=html, date_time=date_time)
 
 @app.route('/admin/posts/compose')
 @login_required

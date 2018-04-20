@@ -40,7 +40,7 @@
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
     <!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css" media="all">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
@@ -98,41 +98,37 @@
                   <a class="navbar-item {% if request.path == settings.icon_2_link %} is-active {% endif %}" href="{{settings.icon_2_link}}">
                       <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
                   </a>
-              <div class="navbar-item">
-                  <form action="{{ url_for('search') }}" method="post" name="search" id="search_form">
-
+                  <div class="navbar-item">
+                    <form action="{{ url_for('search') }}" method="post" name="search" id="search_form">
                       <div class="control has-icons-left" id="search_control">
                         <input class="input is-rounded" id="search_input" type="search" name="search-input">
                         <a class="icon is-left" id="search_icon" href="{{ url_for('search') }}">
                           <i class="fa fa-search"></i>
                         </a>
                       </div>
-
-                  </form>
-                </div>
-
-              </div>
-
+                    </form>
                   </div>
 
-                  {% if current_user.is_authenticated %}
-                    <div class="navbar-item has-dropdown is-hoverable">
-                      <a class="navbar-link">
-                        {{ current_user.name }}
-                      </a>
-
-                      <div class="navbar-dropdown is-boxed">
-                        <a class="navbar-item" href="/profile">
-                          Profile
-                        </a>
-                        <a class="navbar-item" href="{{ url_for('logout') }}">
-                          Logout
-                        </a>
-                            <!-- <i class="fa fa-caret-down"></i> -->
-                      </div>
-                    </div>
-                  {% endif %}
               </div>
+
+
+              {% if current_user.is_authenticated %}
+                <div class="navbar-item has-dropdown is-hoverable">
+                  <a class="navbar-link">
+                    {{ current_user.name }}
+                  </a>
+
+                  <div class="navbar-dropdown is-boxed">
+                    <a class="navbar-item" href="{{ url_for('profile_user_edit') }}">
+                      Profile
+                    </a>
+                    <a class="navbar-item" href="{{ url_for('logout') }}">
+                      Logout
+                    </a>
+                        <!-- <i class="fa fa-caret-down"></i> -->
+                  </div>
+                </div>
+              {% endif %}
             </div>
         </nav>
 
@@ -148,10 +144,12 @@
                 {% endfor %}
             </div>
             <div class="columns main-content" style="flex:1; align-items:stretch">
+            {% if self.sidebar() %}
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
                     {% endblock %}
                 </div>
+            {% endif %}
                 <div class="column content" style="flex:1;display:flex; flex-flow: column;">
                     {% block body %}
                     {% endblock %}

@@ -55,7 +55,7 @@
             <tr class="tag-row">
                 <td class="tag-id">{{tag.id}}</td>
                 <td class="tag-name">{{tag.name}}</td>
-              <td class="tag-post-count"><a href="/tag/{{ tag.name }}">{{tag.count}}</a></td>
+              <td class="tag-post-count"><a href="{{ url_for('view_tag', tag=tag.name) }}">{{tag.count}}</a></td>
                 <td>{{ tag.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
             </tr>
             {% else %}
