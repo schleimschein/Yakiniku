@@ -351,7 +351,7 @@ def admin_save_post():
 @login_required
 @admin_required
 def admin_main():
-    return render_template('post_list.html', posts=Post.select())
+    return render_template('post_list.html', posts=Post.select(), height_is_view_port=True)
 
 
 @app.route('/admin/posts')
@@ -366,7 +366,7 @@ def admin_post_list():
         if user:
             user=user[0] # Accessing the first (and only) result of the query... if a postuser existed
         posts_with_user_and_tags.append([post, user, tags])
-    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags)
+    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags, height_is_view_port=True)
 
 @app.route('/admin/posts/delete', methods=["POST"])
 @login_required
@@ -389,6 +389,9 @@ def admin_post_delete():
             postuser_to_delete = PostUser.select().where(PostUser.post == post_to_delete)[0]
             postuser_to_delete.delete_instance()
             post_to_delete.delete_instance()
+
+            if request.form.get('was_edit', None) and request.form.get('was_edit', None) == 'true':
+                flash('Deleted post ' + str(post_to_delete.id) +' !', "success" )
 
         except Post.DoesNotExist:
             flash("Post does not exist, please look into the sql table", "danger")
@@ -414,7 +417,7 @@ def admin_tag_list():
         .join(Post, peewee.JOIN.LEFT_OUTER) \
         .group_by(Tag) \
         .limit(20)
-    return render_template('tag_list.html', tags=tags_with_post_counts)
+    return render_template('tag_list.html', tags=tags_with_post_counts, height_is_view_port=True)
 
 
 @app.route('/admin/tags/create')
@@ -497,7 +500,7 @@ def admin_user_list():
         .group_by(User) \
         .limit(20)  # JOIN.LEFT_OUTER, so that users get included that posses no posts
                     # fn.Count().alias('count') adds count as an attribute to users
-    return render_template('user_list.html', users_with_post_counts=users_with_post_counts)
+    return render_template('user_list.html', users_with_post_counts=users_with_post_counts, height_is_view_port=True, )
 
 
 @app.route('/admin/users/create')

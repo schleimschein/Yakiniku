@@ -2,6 +2,12 @@ html {
     background-color:#f5f7fa;
 }
 
+body{
+    display:flex;
+    flex-flow: column;
+    flex-direction: column;
+}
+
 .logo-text {
     font-size:1.5em;
 }
@@ -19,9 +25,6 @@ html {
 
 .has-underline {
     border-bottom:1px solid #d2d2d2;
-}
-
-.main-content {
 }
 
 .post-heading {
@@ -75,6 +78,25 @@ html {
 }
 
 .main-section {
+    padding-top: 3.465rem;
+    flex:1;
+    display:flex;
+    flex-flow: column;
+}
+
+.body-container{
+    flex:1;
+    display:flex;
+    flex-flow: column;
+}
+
+.main-content{
+    flex:1;
+    align-items:stretch;
+}
+
+.body-column{
+    flex:1;display:flex; flex-flow: column; overflow:auto
 }
 
 .post-heading a {

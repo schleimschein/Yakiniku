@@ -27,12 +27,15 @@
     http://blog.adamlamers.com/blog
 
      ___     ___    __   ______
-    |__ \   / _ \  /_ | |____  |
-       ) | | | | |  | |     / /
-      / /  | | | |  | |    / /
-     / /_  | |_| |  | |   / /
-    |____|  \___/   |_|  /_/
-
+                                              ,-.
+                                              / /
+ .-----.   .----.  .---..--------.           / /        .-----.   .----.  .---.  .-----.
+/ ,-.   \ /  ..  \/_   ||   __   '          / /        / ,-.   \ /  ..  \/_   | /  .-.  \
+'-'  |  |.  /  \  .|   |`--' .  /          / /         '-'  |  |.  /  \  .|   ||   \_.' /
+   .'  / |  |  '  ||   |    /  /          / /             .'  / |  |  '  ||   | /  .-. '.
+ .'  /__ '  \  /  '|   |   .  /          / /            .'  /__ '  \  /  '|   ||  |   |  |
+|       | \  `'  / |   |  /  /          / /            |       | \  `'  / |   | \  '-'  /
+`-------'  `---''  `---' `--'           `-'            `-------'  `---''  `---'  `----''
 
 -->
 <html lang="en has-navbar-fixed-top">
@@ -49,7 +52,7 @@
     {% endblock %}
 </head>
 
-<body style="display:flex; flex-flow: column; flex-direction: column; min-height:100vh;">
+<body style="{% if not height_is_view_port %}min-height: 100vh;{% else %}height: 100vh;{% endif %}">
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
 
             <div class="navbar-brand">
@@ -133,8 +136,8 @@
         </nav>
 
 
-    <section class="section main-section" style="flex:1; display:flex; flex-flow: column;">
-        <div class="container is-desktop body-container" style="flex:1; display:flex; flex-flow: column;">
+    <section class="section main-section">
+        <div class="container is-desktop body-container">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                 <div class="notification is-{{ category }} has-delete">
@@ -143,14 +146,14 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="columns main-content" style="flex:1; align-items:stretch">
+            <div class="columns main-content">
             {% if self.sidebar() %}
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
                     {% endblock %}
                 </div>
             {% endif %}
-                <div class="column content" style="flex:1;display:flex; flex-flow: column;">
+                <div class="column body-column">
                     {% block body %}
                     {% endblock %}
                 </div>
@@ -174,9 +177,8 @@
     <script type="text/javascript">
 
       $(function() {
-
-
         var deleteContainers  = document.getElementsByClassName('has-delete');
+
         for(var i = 0; i < deleteContainers.length; i++)
         {
             var deleteContainer = deleteContainers[i];
@@ -235,8 +237,6 @@
 
 
       });
-
-
 
 
       document.addEventListener('DOMContentLoaded', function () {

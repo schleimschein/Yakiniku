@@ -74,7 +74,7 @@ $(function() {
                   $.post("{% if selfediting %} {{ url_for('profile_user_delete') }} {% elif not selfediting  %} {{ url_for('admin_user_delete') }} {% endif %}",
                     { id: {{ user.id }} }).done(function(e) {
                   if(JSON.parse(e)["ok"] === true) {
-                    window.location = "/login";
+                    window.location = {{ url_for('login') }};
                   }
                   else
                   {

@@ -25,6 +25,13 @@
             Save as Draft
         </a>
 
+        <a class="panel-block" href="#delete" id="action-delete-post">
+            <span class="panel-icon">
+                <i class="fa fa-minus"></i>
+            </span>
+            Delete Post
+        </a>
+
         <a class="panel-block" href="#view-preview" id="action-preview">
             <span class="panel-icon">
                 <i class="fa fa-eye"></i>
@@ -141,7 +148,6 @@ $(function() {
         postData.post_title = $("[name='post-title']").val();
         postData.post_content_as_markdown = postEditor.value();
 
-
         $.post("{{ url_for('preview') }}", postData).done(function(data) {
             let post_content_as_html = data['html'], date_time = data['date_time'];
             $(".preview.post-heading").html(postData.post_title);
@@ -152,9 +158,25 @@ $(function() {
         });
     });
 
+    $("#action-delete-post").click(function(e) {
+        var editId = $('[name="post-edit-id"]').val();
+        if(confirm("Are you sure you want to delete post " + editId + "?"))
+        {
+            $.post("{{ url_for('admin_post_delete') }}", { id: editId, was_edit: true }).done(function(e) {
+              if(JSON.parse(e)["ok"] === true) {
+                window.location = "{{ url_for('admin_post_list') }}";
+              }
+              else
+              {
+                location.reload();
+              }
+            });
+        }
+    });
+
     $("#post-publish-switch").click(function(e) {
-            postSubmitButton.innerHTML = postPublishSwitch.checked ? "Post" : "Save";
-            postPublishSwitchLabel.innerHTML = postPublishSwitch.checked ? "Publish" : "Draft";
+        postSubmitButton.innerHTML = postPublishSwitch.checked ? "Post" : "Save";
+        postPublishSwitchLabel.innerHTML = postPublishSwitch.checked ? "Publish" : "Draft";
     });
 
 

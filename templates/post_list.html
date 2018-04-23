@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block body %}
-    <table class="table">
+    <table class="table is-hoverable">
         <thead>
             <tr>
                 <td>Post ID</td>
@@ -123,6 +123,9 @@ $(function() {
             alert("Select a post to edit!");
         }
     });
+
+    $('body').bind('mousewheel touchmove', lockScroll);
+
 
     });
 </script>
