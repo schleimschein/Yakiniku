@@ -238,7 +238,6 @@ def tag_view(tag_name, page):
         matches_with_tags.append([match, tags])
 
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
-    print(pages.per_page)
     # .order_by(Post.created_at.desc()).limit(5)
     return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
 
@@ -312,7 +311,6 @@ def search_view(query, page):
 def preview():
     html = markdown.markdown(request.form['post_content_as_markdown'], extensions=[GithubMarkdown()])
     date_time = datetime.datetime.now().strftime("%B %d, %Y")
-    print(date_time)
     return jsonify(html=html, date_time=date_time)
 
 

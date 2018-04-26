@@ -49,7 +49,6 @@
                       <i class="fa fa-tags"></i>
                   </span>
                   -->
-
               </div>
 
               <div class="level-right">
@@ -72,17 +71,17 @@
   {% endfor %}
 
   {% if pages[0] %}
-    <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-    <button class="pagination-previous" href="{% block pagination_previous_link %}{% endblock %}" {% if not pages.has_prev %} disabled="disabled" {% endif %}>
+    <nav class="pagination is-centered" role="navigation" aria-label="pagination" style="margin-top: auto;">
+    <a class="button pagination-previous" {% if pages.has_prev %} href="{% block pagination_previous_link %}{% endblock %}" {% else %} disabled="disabled" {% endif %}>
         Newer
-    </button>
-    <button class="pagination-next " href="{% block pagination_next_link %}{% endblock %}" {% if not pages.has_next %} disabled="disabled" {% endif %}>
+    </a>
+    <a class="button pagination-next " {% if pages.has_next %} href="{% block pagination_next_link %}{% endblock %}" {% else %} disabled="disabled" {% endif %}>
       Older
-    </button>
+    </a>
     <ul class="pagination-list">
         {% for page in pages.elements %}
         <li>
-            <a class="pagination-link" href="{% block pagination_link scoped %}{% endblock %}">{{ page }}</a>
+            <a class="button pagination-link {% if page.number == pages.page %} is-primary {% endif %}" href="{% block pagination_link scoped %}{% endblock %}">{{ page }}</a>
         </li>
         {% endfor %}
     </ul>

@@ -57,7 +57,7 @@ class Pagination(object):
         return self.page - 1
 
     def get_next_count(self):
-        return self.page_count - self.page
+        return self.page + 1
 
     @property
     def has_next(self):
