@@ -17,8 +17,11 @@ body{
 }
 
 .navbar{
-    background: hsla(0,0%,96%, 0.1);
+    background: hsla(0,0%,96%, 0.001);
+    border:none;
+    box-shadow: none;
 }
+
 
 .sidebar-heading {
 }
@@ -45,10 +48,6 @@ body{
     border-top: 1px solid #d2d2d2;
 }
 
-.top-tags {
-    line-height:225%;
-}
-
 .blog-post-card:hover {
     background-color:#f5f7fa;
 }
@@ -65,9 +64,6 @@ body{
     font-weight:bold;
 }
 
-.post-content {
-    padding-right:5em;
-}
 
 .table-row-active {
     background-color:#bcfffc !important;
@@ -121,7 +117,7 @@ body{
 .post-content pre {
     background-color: #424242;
     border-radius: 2px;
-    padding: 1em 0.2em 0.2em 0.1em;
+    #padding: 1em 0.2em 0.2em 0.1em;
     margin-bottom: 1em;
 }
 
@@ -183,17 +179,24 @@ color: hsl(217, 71%, 53%);
     -webkit-appearance: none;
 }
 
-.post_icons{
+.blog-post-card-icons{
+    margin-bottom: 0em;
     position:relative;
-    top: calc(-1.5rem + 0.1875em); /* Default icon size is 1.5rem x 1.5rem and margin of icons in buttons is 0.1875em */
-    right: calc(-1.5rem + 0.1875em);
+    top: calc(-1.5rem + 0.1875em); /* Edit icon in top right corner of blog-post-card -> with proper distance to content of card */
+    right: calc(-1.5rem + 0.1875em); /* Default icon size is 1.5rem x 1.5rem and margin of icons in buttons is 0.1875em */
 }
 
-.post_icons .icon{
+.post-icons{
+    position:relative;
+    top: calc(-0.1875em - 0.2em); /* Edit icon in top right of post -> Properly aligned with content width and heading */
+    right: calc(-0.1875em - 0.2em); /* Margin of icons in buttons is 0.1875em, additional 0.2em so that it looks nice (A little overlap when cutting a border is pleasing for the eye)*/
+}
+
+.blog-post-card-icons .icon{
     color: #424242;
 }
 
-.post_icons .icon:hover
+.blog-post-card-icons .icon:hover
 {
     color: hsl(217, 71%, 53%);
 }

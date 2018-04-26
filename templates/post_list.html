@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% set height_is_view_port = True %}
+
 
 {% block title %}Post List{% endblock %}
 
@@ -49,15 +51,15 @@
             {% for post,user,tags in posts_with_user_and_tags %}
             <tr class="post-row">
                 <td class="post-id">{{ post.id }}</td>
-                <td><a href="{{ url_for('admin_edit_post', pid=post.id) }}">{{ post.title }}</a></td>
+                <td><a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a></td>
                 <td>
                 {% for tag in tags %}
-                  <a href="{{ url_for('view_tag', tag=tag.name) }}" class="tag">{{ tag.name}}</a>
+                  <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
                 {% endfor %}
                 <td><span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span></td>
                 </td>
                 {% if user %}
-                <td><a href="/user/{{user.name}}">{{ user.name}}</a></td>
+                <td><a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a></td>
                 {% elif not user %}
                 <td>Deleted</td>
                 {% endif %}

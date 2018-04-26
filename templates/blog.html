@@ -1,0 +1,16 @@
+{% extends "blog_list.html" %}
+
+{% block title %} Blog Posts {% endblock %}
+
+
+{% block pagination_previous_link %}
+{{ url_for( 'blog', page=pages[0].number - 1) }}
+{% endblock %}
+
+{% block pagination_next_link %}
+{{ url_for('blog', page=pages[-1].number + 1) }}
+{% endblock %}
+
+{% block pagination_link %}
+{{ url_for('blog', page=page.number) }}
+{% endblock %}

@@ -2,18 +2,52 @@
 
 {% block title %}View{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
+{% endblock %}
+
+{% if post.published %}
+  {% block left_to_body_column_not_in_column %}
+        <a href="{{ url_for('blog') }}"><i class="fa fa-arrow-left"></i>&nbsp;</a>
+  {% endblock %}
+{% endif %}
+
 
 {% block body %}
-<div class="container is-fluid">
-    <div class="level">
-        <div class="level-item level-left">
-            <a href="{{ url_for('blog') }}"><i class="fa fa-arrow-left"></i>&nbsp; Back to Posts</a>
+  {% if post.published or current_user.is_authenticated  %}
+    {% if not post.published %}
+      <div class="notification is-warning">
+        This post is not yet published!
+      </div>
+    {% endif %}
+
+    <div class="container">
+
+        <span class="content is-pulled-right post-icons">
+          {% if current_user.admin %}
+         <a class="icon" href="{{ url_for('admin_edit_post', pid=post.id) }}">
+            <i class="fa fa-pencil"></i>
+          </a>
+          {% endif %}
+        </span>
+        <h1 class="title is-2">{{ post.title }}</h1>
+        <h5 class="subtitle is-5 is has-text-right">Posted{% if user  %} by {{ user.name }}{% endif %} on {{ post.created_at.strftime("%B %d, %Y") }}</h5>
+        <div class="content post-content">
+            {{ post.content|Markdown }}
         </div>
     </div>
-    <h1>{{ post.title }}</h1>
-    <h5>Posted{% if user  %} by {{ user.name }}{% endif %} on {{ post.created_at.strftime("%B %d, %Y") }}</h5>
-    <div class="content post-content">
-        {{ post.content|Markdown }}
+
+  {% else %}
+
+    <div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
+      <div class="content has-text-centered">
+            <h1 class="title">Nothing to see here</h1>
+      </div>
     </div>
-</div>
+
+  {% endif %}
+
 {% endblock %}

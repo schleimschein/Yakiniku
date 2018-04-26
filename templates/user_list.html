@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% set height_is_view_port = True %}
+
 
 {% block title %}User List{% endblock %}
 
@@ -56,7 +58,7 @@
             <tr class="user-row">
                 <td class="user-id">{{ user.id }}</td>
                 <td class="user-name">{{ user.name }}</td>
-                <td class="user-post-count"> <a href="{{ url_for('view_user', user=user.name) }}">{{ user.count }}</a></td>
+                <td class="user-post-count"> <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.count }}</a></td>
                 <td>{{ user.created_at }}</td>
             </tr>
             {% else %}

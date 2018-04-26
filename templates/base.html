@@ -42,12 +42,14 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
+
     <!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
     {% block head %}
     {% endblock %}
 </head>
@@ -56,7 +58,7 @@
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
 
             <div class="navbar-brand">
-                <a class="navbar-item" href="{{url_for('blog')}}">
+                <a class="navbar-item" href="{{url_for('index')}}">
                     <span class="logo-text">{{ settings.blog_title }} ::</span>
                 </a>
 
@@ -102,7 +104,7 @@
                       <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
                   </a>
                   <div class="navbar-item">
-                    <form action="{{ url_for('search') }}" method="post" name="search" id="search_form">
+                    <form action="{{ url_for('search') }}" method="POST" name="search" id="search_form">
                       <div class="control has-icons-left" id="search_control">
                         <input class="input is-rounded" id="search_input" type="search" name="search-input">
                         <a class="icon is-left" id="search_icon" href="{{ url_for('search') }}">
@@ -137,7 +139,6 @@
 
 
     <section class="section main-section">
-        <div class="container is-desktop body-container">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                 <div class="notification is-{{ category }} has-delete">
@@ -147,18 +148,24 @@
                 {% endfor %}
             </div>
             <div class="columns main-content">
-            {% if self.sidebar() %}
+            {% if self.left_to_body_column_not_in_column | trim %}
+                {% block left_to_body_column_not_in_column %}
+                {% endblock %}
+            {% endif %}
+
+            {% if self.sidebar() | trim %}
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
                     {% endblock %}
                 </div>
             {% endif %}
                 <div class="column body-column">
-                    {% block body %}
+                  <div class="container is-desktop body-container">
+                  {% block body %}
                     {% endblock %}
+                  </div>
                 </div>
             </div>
-        </div>
     </section>
 
     <footer class="footer_not_bulma">
