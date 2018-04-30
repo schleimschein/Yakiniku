@@ -24,8 +24,6 @@ auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
 
-# TODO: Filter Posts with regards to published via SQL!
-# TODO: Move "Nothing to see here" to  404 site
 # TODO: Muddle awesomplete and tagsinput into one ! C L E A N ! function
 # TODO: Awesomplete and tagsinput in Tag edit
 # TODO: Paginate tables
@@ -239,7 +237,11 @@ def tag_view(tag_name, page):
 
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
     # .order_by(Post.created_at.desc()).limit(5)
-    return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
+
+    if not len(matches) == 0:
+        return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
+    else:
+        return render_template('404.html', notice="No posts with this tag")
 
 
 @app.route('/user/<user_name>', defaults={'page': 1})
@@ -265,7 +267,9 @@ def user_view(user_name, page):
 
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
     # .order_by(Post.created_at.desc()).limit(5)
-    return render_template('user_view.html', posts_with_tags=matches_with_tags, pages=pages, user_name=user_name)
+    if not len(matches) == 0:
+        return render_template('user_view.html', posts_with_tags=matches_with_tags, pages=pages, user_name=user_name)
+    return render_template('404.html', notice="No posts by this user")
 
 
 @app.route('/search', methods=["POST"])
@@ -732,6 +736,13 @@ def admin_settings_save():
         flash("Please try again.", "danger")
 
     return redirect(url_for('admin_settings'))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    notice = """Nothing to see here"""
+    return render_template('404.html', notice=notice), 404
+
 
 
 if __name__ == '__main__':

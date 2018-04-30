@@ -70,7 +70,7 @@
   </div>
   {% endfor %}
 
-  {% if pages[0] %}
+  {% if pages %}
     <nav class="pagination is-centered" role="navigation" aria-label="pagination" style="margin-top: auto;">
     <a class="button pagination-previous" {% if pages.has_prev %} href="{% block pagination_previous_link %}{% endblock %}" {% else %} disabled="disabled" {% endif %}>
         Newer

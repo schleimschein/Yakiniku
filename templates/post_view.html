@@ -19,8 +19,9 @@
 {% block body %}
   {% if post.published or current_user.is_authenticated  %}
     {% if not post.published %}
-      <div class="notification is-warning">
-        This post is not yet published!
+      <div class="notification is-warning has-text-centered is-size-5 has-delete">
+      <button class="delete"></button>
+        %%%%%%%%%%%   This post is not yet published!   %%%%%%%%%%%%
       </div>
     {% endif %}
 

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %} Blog Posts {% endblock %}
+
+{% block body %}
+
+ <div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
+ <div class="columns is-centered">
+   <div class="column is-narrow">
+    <div class="content">
+          <span class="title is-5">{{ notice | safe }}</span>
+    </div>
+        </div>
+   </div>
+  </div>
+
+{% endblock %}
