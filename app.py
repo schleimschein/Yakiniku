@@ -24,9 +24,10 @@ auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
 
-# TODO: Muddle awesomplete and tagsinput into one ! C L E A N ! function
-# TODO: Awesomplete and tagsinput in Tag edit
+# TODO: Tagify
+# TODO: Remove SCSS -> Css Converter
 # TODO: Paginate tables
+# TODO: Hover navbar_search_input
 # TODO: Refactor: everything
 # TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
 # TODO: Refactor: Structure of CSS
@@ -274,7 +275,7 @@ def user_view(user_name, page):
 
 @app.route('/search', methods=["POST"])
 def search():
-    query = request.form.get('search-input')
+    query = request.form.get('navbar-search-input')
     return redirect(url_for('search_view', query=query))
 
 
@@ -282,8 +283,7 @@ def search():
 @app.route('/search/<query>/<int:page>')
 def search_view(query, page):
     settings = util.get_current_settings()
-
-    query = query
+    query = "\'" + query + "\'" # the quotation marks are absolutely necessary for a pg tsquery with multiple words
 
     if current_user.is_authenticated:
         if current_user.admin:
@@ -370,6 +370,10 @@ def admin_save_post():
                 tag, _ = Tag.get_or_create(name=tag_name)
                 PostTag.get_or_create(post=post, tag=tag)
 
+            old_tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+            for old_tag in old_tags:
+                if not old_tag.name in tags:
+                    PostTag.get(PostTag.post == post, PostTag.tag == old_tag).delete_instance()
 
             flash("Post edited!", "success")
 
@@ -414,7 +418,8 @@ def admin_main():
 @login_required
 @admin_required
 def admin_post_list():
-    posts = Post.select().order_by(Post.created_at.desc())
+    posts = Post.select()
+
     posts_with_user_and_tags = []
     for post in posts:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
@@ -422,7 +427,26 @@ def admin_post_list():
         if user:
             user = user[0]  # Accessing the first (and only) result of the query... if a postuser existed
         posts_with_user_and_tags.append([post, user, tags])
-    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags)
+
+
+    order_by = request.args.get('order_by')
+    order = request.args.get('order')
+
+    if (order_by == 'title' and order == 'asc' ):
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower() )
+    elif(order_by == 'title' and order == 'desc' ):
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower(), reverse=True )
+    elif (order_by == 'user' and order == 'asc'):
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower() )
+    elif (order_by == 'user' and order == 'desc'):
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower(), reverse=True )
+    elif (order_by == 'updated_at' and order == 'asc'):
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at )
+    else:
+        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at, reverse=True )
+        order_by = 'updated_at'
+        order = 'desc'
+    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags, order_by=order_by, order=order)
 
 
 @app.route('/admin/posts/delete', methods=["POST"])
@@ -479,7 +503,9 @@ def admin_tag_list():
 @login_required
 @admin_required
 def admin_tag_create():
-    return render_template('tag_edit.html', tags=False)
+    all_tags = Tag.select()
+    return render_template('tag_edit.html', editing=False, tags=False, all_tags = Tag.select()
+)
 
 
 @app.route('/admin/tags/edit/<uid>')
@@ -490,20 +516,21 @@ def admin_tag_edit(uid):
         tag_to_edit = Tag.get(Tag.id == uid)
     except Tag.DoesNotExist:
         abort(404)
-    return render_template('tag_edit.html', editing=True, tag=tag_to_edit)
+    return render_template('tag_edit.html', editing=True, tag_to_edit=tag_to_edit, all_tags = Tag.select() )
 
 
 @app.route('/admin/tags/save', methods=["POST"])
 @login_required
 @admin_required
 def admin_tag_save():
-    tagname = request.form.get('tag-name')
+
+    tag_names = list(filter(None, request.form.get('tags').split(',')))
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
         try:
             tag_to_edit = Tag.get(Tag.id == edit_id)
-            tag_to_edit.name = tagname
+            tag_to_edit.name = tag_names[0]
             tag_to_edit.save()
             flash("Tag edited", "success")
 
@@ -511,11 +538,22 @@ def admin_tag_save():
             abort(404)
 
     else:
-        t, created = Tag.get_or_create(name=tagname)
-        if created:
-            flash("Tag created!", "success")
-        else:
-            flash("Tag already existed!", "danger")
+        successes = []
+        for tag_name in tag_names:
+            t, created = Tag.get_or_create(name=tag_name)
+            successes.append(created)
+
+
+
+        if successes.count(True) == 1:
+            flash("Tag \"" + ", ".join( [tag_name for tag_name,success in zip(tag_names, successes) if success == True ] ) + "\" created!", "success")
+        elif successes.count(True) > 1:
+            flash("Tags \"" + ", ".join( [tag_name for tag_name,success in zip(tag_names, successes) if success == True ] ) + "\" created!", "success")
+
+        if successes.count(False) == 1:
+            flash("Tag \"" + ", ".join([tag_name for tag_name,success in zip(tag_names, successes) if success == False ]) + "\" already existed!", "danger")
+        elif successes.count(False) > 1:
+            flash("Tags \"" + ", ".join([tag_name for tag_name,success in zip(tag_names, successes) if success == False ]) + "\" already existed!", "danger")
 
     return redirect(url_for('admin_tag_list'))
 

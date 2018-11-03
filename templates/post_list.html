@@ -31,47 +31,104 @@
             </span>
             Edit Post
         </a>
+      <!--
+        <a class="panel-block" href="javascript:void(0);" id="action-search-post">
+          <span>
+            <span class="panel-icon" id="post_search_icon">
+              <i class="fa fa-search" aria-hidden="true"></i>
+            </span>
+            <span>
+              Search Post
+            </span>
+          </span>
+       -->
+          <!-- <break style="flex-basis: 100%;width: 0px; height: 0px; overflow: hidden;"></break> -->
+        <!--  <div class="control" id="post_search_control">
+            <input class="input is-small" id="post_search_input" size="1" type="text" placeholder="Search Post">
+          </div>
+         -->
+
+        </a>
     </div>
 </div>
 {% endblock %}
 
 {% block body %}
-    <table class="table is-hoverable">
-        <thead>
-            <tr>
-                <td>Post ID</td>
-                <td>Title</td>
-                <td>Tags</td>
-                <td>Published</td>
-                <td>User</td>
-                <td>Date Posted</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for post,user,tags in posts_with_user_and_tags %}
-            <tr class="post-row">
-                <td class="post-id">{{ post.id }}</td>
-                <td><a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a></td>
-                <td>
-                {% for tag in tags %}
-                  <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
-                {% endfor %}
-                <td><span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span></td>
-                </td>
-                {% if user %}
-                <td><a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a></td>
-                {% elif not user %}
-                <td>Deleted</td>
-                {% endif %}
-                <td>{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td class="has-text-centered" colspan="3"> No Posts To Display </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+ <div id="posts"  style="flex-grow: 1; height: 100%; display:flex; flex-direction: column; align-content:stretch;" >
+   <div id="table-container"  style="flex-grow: 1; height: 100%; width:100%; overflow:auto; overflow-x: auto; background-color: #fff;" >
+     <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
+          <thead>
+              <tr>
+                  <th class="sort" data-sort="post_id">ID</th>
+                  <th class="sort" data-sort="post_title">Title</th>
+                  <th class="sort" data-sort="post_tags">Tags</th>
+                  <th class="sort" data-sort="post_published">Publ.</th>
+                  <th class="sort" data-sort="post_user">User</th>
+                  <th class="sort" data-sort="post_date_posted">Posted</th>
+                  <th class="sort" data-sort="post_date_updated">Updated</th>
+
+              </tr>
+          </thead>
+          <tbody class="list" >
+              {% for post,user,tags in posts_with_user_and_tags %}
+              <tr class="post-row"z>
+                  <td class="post_id post-id">
+                    {{ post.id }}
+                  </td>
+                  <td class="post_title" data-title="{{ post.title }}">
+                    <a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a>
+                  </td>
+                  {% set comma = joiner(",") %}
+                  <td class="post_tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
+                  {% for tag in tags %}
+                    <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
+                  {% endfor %}
+                  <td class="post_published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
+                    <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span></td>
+                  </td>
+                  <td class="post_user">
+                  {% if user %}
+                    <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a>
+                  {% elif not user %}
+                    Deleted
+                  {% endif %}
+                  </td>
+                  <td class="post_date_posted">
+                    {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                  </td>
+                  <td class="post_date_updated">
+                    {{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                  </td>
+              </tr>
+              {% else %}
+              <tr>
+                  <td class="has-text-centered" colspan="3"> No Posts To Display </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+   </div>
+  <nav class="level">
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <div class="control has-icons-left" id="">
+            <input class="input is-small" id="post-search-field" size="20" type="text" placeholder="Search Post">
+            <span class="icon is-small is-left">
+              <i class="fa fa-search"></i>
+            </span>
+        </div>
+      </div>
+    </div>
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <nav class="pagination is-right is-small" role="navigation" style="align:flex-self; " aria-label="pagination">
+      <ul class="pagination-list"></ul>
+    </nav>
+      </div>
+    </div>
+  </nav>
+ </div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -126,9 +183,56 @@ $(function() {
         }
     });
 
-    $('body').bind('mousewheel touchmove', lockScroll);
+    /*$("#action-search-post").one("click", function(e) {
+        e.preventDefault();
+        this.classList.toggle("expanded");
+        document.getElementById('post_search_control').classList.toggle("expanded");
+        document.getElementById('post_search_input').focus();
 
+    });*/
 
     });
 </script>
+
+<!-- Fancy table functions via list_with_bulma.js. Unfortunately we have to tinker a bit with the pagination classes :/ -->
+<script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
+<script type="text/javascript">
+$(function() {
+  var options = {
+    valueNames: ['post_id',
+      { name: 'post_title', attr: 'data-title' },
+      { name: 'post_tags', attr: 'data-tags' },
+      { name: 'post_published', attr: 'data-published' },
+      'post_user', 'post_date_posted',
+      'post_date_updated'],
+    page: 14,
+    pagination: [{
+      paginationClass: 'pagination-list',
+      innerWindow: 5,
+      outerWindow: 1
+    }]
+
+  };
+
+  // Init list
+  var postList = new List('posts', options);
+  var paginationList = document.getElementsByClassName("pagination")[0];
+  var paginationLinks = paginationList.children;
+  if (postList.matchingItems.length < postList.page) {
+    paginationList.classList.add('is-invisible');
+  }
+
+  $('#post-search-field').keyup(function() {
+   var searchString = $(this).val();
+   postList.search(searchString);
+});
+
+
+});
+
+
+
+</script>
+
+
 {% endblock %}

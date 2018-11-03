@@ -53,7 +53,7 @@
 
               <div class="level-right">
                   {% for tag in tags %}
-                  <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="level-item tag is-info post-tag">
+                  <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="level-item tag is-primary post-tag">
                       {{ tag.name }}
                   </a>
                   {% endfor %}

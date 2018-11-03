@@ -4,6 +4,7 @@ from datetime import datetime
 from config import Config
 import urllib.parse
 
+
 db_parsed_url = urllib.parse.urlparse(Config.DATABASE_URL)
 username = db_parsed_url.username
 password = db_parsed_url.password

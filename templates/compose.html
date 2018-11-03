@@ -3,9 +3,8 @@
 {% block title %} New Post {% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_with_bulma.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
 
 
@@ -65,9 +64,13 @@
             <label class="label">Tags</label>
             <p class="control">
                 {% if not editing %}
-                <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
+                <!-- <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}"> -->
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" tag-white-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}" >
+
                 {% else %}
-                <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}">
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" tag-white-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}">
+
+                <!-- <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}"> -->
                 {% endif %}
             </p>
             <label class="label"> Status</label>
@@ -124,18 +127,28 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='js/tagsinput_with_awesomplete.js') }}"></script>
-<script src="{{ url_for('static', filename='js/awesomplete_with_tagsinput.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
 
 
 <script type="text/javascript">
 
+
+
 $(function() {
+
+    var input, tagBlackList, tagify;
+
+    input = document.querySelector('input[id=input_tagify]');
+    if (input) {
+      tagWhiteList = input.getAttribute('tag-white-list').split(/\s*,\s*/);
+      tagify = new Tagify(input, {whitelist: tagWhiteList, keepInvalidTags: true});
+  }
+
+
     var postForm = document.getElementById('post-form');
     var postEditor = new SimpleMDE({ element: document.getElementById("post-content-editor")});
     var postPublishSwitch = document.getElementById('post-publish-switch');
     var postPublishSwitchLabel = document.getElementById('post-publish-switch-label');
-
     var postSubmitButton = document.getElementById('post-submit-button');
 
     $("#action-draft").click(function(e) {
@@ -178,6 +191,7 @@ $(function() {
         postSubmitButton.innerHTML = postPublishSwitch.checked ? "Post" : "Save";
         postPublishSwitchLabel.innerHTML = postPublishSwitch.checked ? "Publish" : "Draft";
     });
+
 
 
 });

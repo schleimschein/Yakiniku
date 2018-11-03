@@ -43,8 +43,12 @@
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
 
-    <!--    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
+
+
+
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
@@ -104,10 +108,10 @@
                       <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
                   </a>
                   <div class="navbar-item">
-                    <form action="{{ url_for('search') }}" method="POST" name="search" id="search_form">
-                      <div class="control has-icons-left" id="search_control">
-                        <input class="input is-rounded" id="search_input" type="search" name="search-input">
-                        <a class="icon is-left" id="search_icon" href="{{ url_for('search') }}">
+                    <form action="{{ url_for('search') }}" method="POST" name="search" id="navbar_search_form">
+                      <div class="control has-icons-left" id="navbar_search_control">
+                        <input class="input is-rounded" id="navbar_search_input" type="search" name="navbar_search_input">
+                        <a class="icon is-left" id="navbar_search_icon" href="{{ url_for('search') }}">
                           <i class="fa fa-search"></i>
                         </a>
                       </div>
@@ -160,7 +164,7 @@
                 </div>
             {% endif %}
                 <div class="column body-column">
-                  <div class="container is-desktop body-container">
+                  <div class="container is-desktop is-fluid body-container">
                   {% block body %}
                     {% endblock %}
                   </div>
@@ -203,10 +207,10 @@
         }
 
 
-        var searchForm = document.getElementById('search_form');
-        var searchControl = document.getElementById('search_control');
-        var searchInput = document.getElementById('search_input');
-        var searchIcon = document.getElementById('search_icon');
+        var searchForm = document.getElementById('navbar_search_form');
+        var searchControl = document.getElementById('navbar_search_control');
+        var searchInput = document.getElementById('navbar_search_input');
+        var searchIcon = document.getElementById('navbar_search_icon');
 
         searchInput.onkeyup = function(e)
         {

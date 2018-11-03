@@ -2,45 +2,64 @@
 
 {% block title %} New Post {% endblock %}
 
-{% block sidebar %}
-<div class="content">
-    <div class="panel">
-        <div class="panel-heading">
-            Options
-        </div>
-        <a class="panel-block" href="#delete">
-            <span class="panel-icon">
-                <i class="fa fa-times"></i>
-            </span>
-            Delete This Tag
-        </a>
-    </div>
-</div>
+{% block head %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_with_bulma.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
+
+
 {% endblock %}
+
+  {% block sidebar %}
+    {%  if editing == True %}
+  <div class="content">
+      <div class="panel">
+          <div class="panel-heading">
+              Options
+          </div>
+          <a class="panel-block" href="#delete">
+              <span class="panel-icon">
+                  <i class="fa fa-times"></i>
+              </span>
+              Delete This Tag
+          </a>
+      </div>
+  </div>
+    {% endif %}
+
+  {% endblock %}
 
 {% block body %}
     <div class="content">
         <form action="{{ url_for('admin_tag_save') }}" method="POST" id="tag-form">
+          <div class="field">
+
             {% if not editing %}
             <label class="label">Create Tag</label>
             {% else %}
-            <label class="label">Edit Tag {{ tag.name }}</label>
+              <label class="label">Edit Tag <span class="is-size-4">"{{ tag_to_edit.name }}"</span></label>
             {% endif %}
 
-
-            #TODO: Use awesomplete to detect wheter Tag already exists
-            <p class="control">
+              <div class="control is-expanded">
                 {% if not editing %}
-                <input type="text" name="tag-name" class="input" placeholder="Tag">
+                  <input class="input" id="input_tagify" type="tags" name="tags" placeholder="Tags" tag-black-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
                 {% else %}
-                <input type="text" name="tag-name" class="input" value="{{ tag.name }}">
+                  <input class="input" type="tags" name="tags" placeholder="Tags" tag-black-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
                 {% endif %}
-            </p>
-            <div class="has-text-right"><button class="button is-primary">Save</button></div>
+              </div>
+          </div>
+          <div class="field">
 
-            {% if editing %}
-            <input type="hidden" name="tag-edit-id" value="{{ tag.id }}">
-            {% endif %}
+              <div class="control">
+                <div class="has-text-right"><button class="button is-primary" id="tags-submit-button">Save</button></div>
+              </div>
+              {% if editing %}
+              <input type="hidden" name="tag-edit-id" value="{{ tag_to_edit.id }}">
+              {% endif %}
+          </div>
         </form>
     </div>
 
@@ -49,4 +68,30 @@
             <a name="view-preview"></a>
         </div>
     </div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
+
+  <!--
+<script src="{{ url_for('static', filename='js/tagsinput_with_awesomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='js/awesomplete_with_tagsinput.js') }}"></script>
+-->
+
+<script type="text/javascript">
+$(function() {
+
+  var input, tagBlackList, tagify;
+
+  input = document.querySelector('input[id=input_tagify]');
+  if (input) {
+    tagBlackList = input.getAttribute('tag-black-list').split(/\s*,\s*/);
+    tagify = new Tagify(input, {blacklist: tagBlackList, keepInvalidTags: true});
+  }
+
+
+
+
+  });
+  </script>
 {% endblock %}
