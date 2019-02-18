@@ -1,14 +1,13 @@
 {% extends "base.html" %}
+{% set comma = joiner(",") %}
 
 {% block title %} New Post {% endblock %}
 
 {% block head %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_with_bulma.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
+
 
 
 {% endblock %}
@@ -45,10 +44,12 @@
 
               <div class="control is-expanded">
                 {% if not editing %}
-                  <input class="input" id="input_tagify" type="tags" name="tags" placeholder="Tags" tag-black-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
+                  <input class="input" id="input_tagify" type="tags" name="tags" placeholder="Tags" >
                 {% else %}
-                  <input class="input" type="tags" name="tags" placeholder="Tags" tag-black-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}">
+                  <input class="input" id="input_tagify" type="tags" name="tags" placeholder="Tags" value="{{ tag_to_edit.name }}">
                 {% endif %}
+		            <div id="all-tags" all-tags="{% for tag in all_tags %}{{ comma() }}{{tag.name}}{% endfor %}"></div>
+		
               </div>
           </div>
           <div class="field">
@@ -71,7 +72,7 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tagify_with_working_editing.js') }}"></script>
 
   <!--
 <script src="{{ url_for('static', filename='js/tagsinput_with_awesomplete.js') }}"></script>
@@ -79,19 +80,20 @@
 -->
 
 <script type="text/javascript">
-$(function() {
+  var input = document.querySelector('input[id=input_tagify]');
 
-  var input, tagBlackList, tagify;
-
-  input = document.querySelector('input[id=input_tagify]');
-  if (input) {
-    tagBlackList = input.getAttribute('tag-black-list').split(/\s*,\s*/);
-    tagify = new Tagify(input, {blacklist: tagBlackList, keepInvalidTags: true});
-  }
-
-
-
-
+  var all_tags = document.getElementById("all-tags").getAttribute("all-tags")
+  var tagify = new Tagify(input, {
+    {% if editing %}
+      maxTags: 1,
+    {% endif %}
+    whitelist: all_tags.split(','),
+    blacklist: all_tags.split(','),
+    autocomplete: false,
+    tagTemplate: function template(v, tagData) {
+      return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";
+    }
   });
+
   </script>
 {% endblock %}

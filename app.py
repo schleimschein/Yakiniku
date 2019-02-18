@@ -516,7 +516,7 @@ def admin_tag_edit(uid):
         tag_to_edit = Tag.get(Tag.id == uid)
     except Tag.DoesNotExist:
         abort(404)
-    return render_template('tag_edit.html', editing=True, tag_to_edit=tag_to_edit, all_tags = Tag.select() )
+    return render_template('tag_edit.html', editing=True, tag_to_edit=tag_to_edit, all_tags = Tag.select().where(Tag.id != tag_to_edit.id  ) )
 
 
 @app.route('/admin/tags/save', methods=["POST"])
@@ -524,13 +524,15 @@ def admin_tag_edit(uid):
 @admin_required
 def admin_tag_save():
 
-    tag_names = list(filter(None, request.form.get('tags').split(',')))
+    tagnames_json = json.loads(request.form.get('tags'))
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
         try:
+            tagname_json = tagnames_json[0]
+            tagname = tagname_json["value"]
             tag_to_edit = Tag.get(Tag.id == edit_id)
-            tag_to_edit.name = tag_names[0]
+            tag_to_edit.name = tagname
             tag_to_edit.save()
             flash("Tag edited", "success")
 
@@ -539,7 +541,9 @@ def admin_tag_save():
 
     else:
         successes = []
-        for tag_name in tag_names:
+        for tagname_json in tagnames_json:
+            tag_name = tagname_json["value"]
+
             t, created = Tag.get_or_create(name=tag_name)
             successes.append(created)
 
@@ -786,3 +790,4 @@ def page_not_found(e):
 if __name__ == '__main__':
     app.debug = True
     app.run()
+
