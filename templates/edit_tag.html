@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set comma = joiner(",") %}
 
 {% block title %} New Post {% endblock %}
 
@@ -28,10 +29,12 @@
             {% endif %}
             <p class="control">
                 {% if not editing %}
-                <input type="text" name="tag-name" class="input" placeholder="Tag">
+                <input type="text" name="tag-name" class="input" placeholder="Tag" style="height:auto ! important;">
                 {% else %}
-                <input type="text" name="tag-name" class="input" value="{{ tag.name }}">
+                <input type="text" name="tag-name" class="input" value="{{ tag.name }}" style="height:auto ! important;">
                 {% endif %}
+
+                  <div id="exisiting-tags" existing-tags="{% for existing_tag in existing_tags %}{{ comma() }}{{existing_tag.name}}{% endfor %}"></div>
             </p>
             <div class="has-text-right"><button class="button is-primary">Save</button></div>
 
@@ -46,4 +49,24 @@
             <a name="view-preview"></a>
         </div>
     </div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', filename='js/tagify_with_working_editing.js') }}"></script>
+
+<script type="text/javascript">
+  var input = document.querySelector('input');
+  var existing_tags_element = document.getElementById("exisiting-tags");
+  var existing_tags = existing_tags_element.getAttribute('existing-tags');
+
+  var tagify = new Tagify(input, {
+        {% if editing %}
+        maxTags: 1,
+        {% endif %}
+        whitelist : existing_tags.split(','),
+        blacklist : existing_tags.split(','),
+        autocomplete: false,
+        tagTemplate: function template(v, tagData) { return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";}
+  });
+  </script>
 {% endblock %}

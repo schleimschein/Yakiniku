@@ -330,7 +330,7 @@ def admin_tag_list():
 @login_required
 @admin_required
 def admin_tag_create():
-    return render_template('edit_tag.html', tags=False)
+    return render_template('edit_tag.html', existing_tags=Tag.select())
 
 @app.route('/admin/tags/edit/<uid>')
 @login_required
@@ -347,11 +347,13 @@ def admin_tag_edit(uid):
 @admin_required
 def admin_tag_save():
 
-    tagname = request.form.get('tag-name')
+    tagnames_json = json.loads(request.form.get('tag-name'))
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
         try:
+            tagname_json = tagnames_json[0]
+            tagname = tagname_json["value"]
             tag_to_edit = Tag.get(Tag.id == edit_id)
             tag_to_edit.name = tagname
             tag_to_edit.save()
@@ -361,11 +363,13 @@ def admin_tag_save():
             abort(404)
 
     else:
-        t, created = Tag.get_or_create(name=tagname)
-        if created:
-            flash("Tag created!", "success")
-        else:
-            flash("Tag already existed!", "danger")
+        for tagname_json in tagnames_json:
+            print(tagname_json)
+            t, created = Tag.get_or_create(name=tagname_json["value"])
+            if created:
+                flash("Tag created!", "success")
+            else:
+                flash("Tag already existed!", "danger")
 
     return redirect(url_for('admin_tag_list'))
 
