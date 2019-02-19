@@ -24,8 +24,6 @@ auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
 
-# TODO: Tagify
-# TODO: Remove SCSS -> Css Converter
 # TODO: Paginate tables
 # TODO: Hover navbar_search_input
 # TODO: Refactor: everything
@@ -373,7 +371,7 @@ def admin_save_post():
 
             old_tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
             for old_tag in old_tags:
-                if not old_tag.name in tags:
+                if not old_tag in tags:
                     PostTag.get(PostTag.post == post, PostTag.tag == old_tag).delete_instance()
 
             flash("Post edited!", "success")
@@ -542,21 +540,20 @@ def admin_tag_save():
     else:
         successes = []
         for tag in tags:
-            tag_name = tag.name
-            t, created = Tag.get_or_create(name=tag_name)
+            t, created = Tag.get_or_create(name=tag)
             successes.append(created)
 
 
 
         if successes.count(True) == 1:
-            flash("Tag \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
+            flash("Tag \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
         elif successes.count(True) > 1:
-            flash("Tags \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
+            flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
 
         if successes.count(False) == 1:
-            flash("Tag \"" + ", ".join( [tag.name for tag, success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
+            flash("Tag \"" + ", ".join( [tag for tag, success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
         elif successes.count(False) > 1:
-            flash("Tags \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
+            flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
 
     return redirect(url_for('admin_tag_list'))
 

@@ -90,6 +90,7 @@
     whitelist: all_tags.split(','),
     blacklist: all_tags.split(','),
     autocomplete: false,
+    delimiters: ["," , " "],
     tagTemplate: function template(v, tagData) {
       return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";
     }
