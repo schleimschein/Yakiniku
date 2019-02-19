@@ -352,7 +352,8 @@ def admin_save_post():
     slug = util.slugify(title)
     content = request.form.get('post-content')
     description = request.form.get('post-description')
-    tags = list(filter(None, request.form.get('post-tags').split(',')))
+    tags_json = json.loads(request.form.get('post-tags'))
+    tags = [ tag_json["value"] for tag_json in tags_json ]
     publish = True if request.form.get('post-publish') == 'on' else False
 
     if edit_id:
@@ -366,8 +367,8 @@ def admin_save_post():
             post.published = publish
             post.save()
 
-            for tag_name in tags:
-                tag, _ = Tag.get_or_create(name=tag_name)
+            for tag in tags:
+                tag, _ = Tag.get_or_create(name=tag)
                 PostTag.get_or_create(post=post, tag=tag)
 
             old_tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
@@ -524,15 +525,14 @@ def admin_tag_edit(uid):
 @admin_required
 def admin_tag_save():
 
-    tagnames_json = json.loads(request.form.get('tags'))
+    tags_json = json.loads(request.form.get('tags'))
+    tags = [ tag_json["value"] for tag_json in tags_json ]
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
         try:
-            tagname_json = tagnames_json[0]
-            tagname = tagname_json["value"]
             tag_to_edit = Tag.get(Tag.id == edit_id)
-            tag_to_edit.name = tagname
+            tag_to_edit.name = tags[0]
             tag_to_edit.save()
             flash("Tag edited", "success")
 
@@ -541,23 +541,22 @@ def admin_tag_save():
 
     else:
         successes = []
-        for tagname_json in tagnames_json:
-            tag_name = tagname_json["value"]
-
+        for tag in tags:
+            tag_name = tag.name
             t, created = Tag.get_or_create(name=tag_name)
             successes.append(created)
 
 
 
         if successes.count(True) == 1:
-            flash("Tag \"" + ", ".join( [tag_name for tag_name,success in zip(tag_names, successes) if success == True ] ) + "\" created!", "success")
+            flash("Tag \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
         elif successes.count(True) > 1:
-            flash("Tags \"" + ", ".join( [tag_name for tag_name,success in zip(tag_names, successes) if success == True ] ) + "\" created!", "success")
+            flash("Tags \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
 
         if successes.count(False) == 1:
-            flash("Tag \"" + ", ".join([tag_name for tag_name,success in zip(tag_names, successes) if success == False ]) + "\" already existed!", "danger")
+            flash("Tag \"" + ", ".join( [tag.name for tag, success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
         elif successes.count(False) > 1:
-            flash("Tags \"" + ", ".join([tag_name for tag_name,success in zip(tag_names, successes) if success == False ]) + "\" already existed!", "danger")
+            flash("Tags \"" + ", ".join( [tag.name for tag,success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
 
     return redirect(url_for('admin_tag_list'))
 

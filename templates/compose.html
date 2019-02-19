@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% set comma = joiner(",") %}
+
 
 {% block title %} New Post {% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_with_bulma.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
 
 
@@ -64,14 +66,12 @@
             <label class="label">Tags</label>
             <p class="control">
                 {% if not editing %}
-                <!-- <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}"> -->
-                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" tag-white-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}" >
-
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %} {{tag.name}}{% endfor %}">
                 {% else %}
-                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" tag-white-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}">
-
-                <!-- <input class="input" type="tags_with_awesomplete" name="post-tags" placeholder="Tags" data-tag-list="{% for tag in all_tags %} {{tag.name}} , {% endfor %}" value="{% for tag in tags_of_post %} {{tag.name}} , {% endfor %}"> -->
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %} {{tag.name}}{% endfor %}">
                 {% endif %}
+                <div id="all-tags" all-tags="{% for tag in all_tags %}{{ comma() }}{{tag.name}}{% endfor %}"></div>
+
             </p>
             <label class="label"> Status</label>
             <p class="control">
@@ -127,7 +127,7 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tagify_with_working_editing.js') }}"></script>
 
 
 <script type="text/javascript">
@@ -136,14 +136,15 @@
 
 $(function() {
 
-    var input, tagBlackList, tagify;
-
-    input = document.querySelector('input[id=input_tagify]');
-    if (input) {
-      tagWhiteList = input.getAttribute('tag-white-list').split(/\s*,\s*/);
-      tagify = new Tagify(input, {whitelist: tagWhiteList, keepInvalidTags: true});
-  }
-
+    var input = document.querySelector('input[id=input_tagify]');
+    var all_tags = document.getElementById("all-tags").getAttribute("all-tags");
+    var tagify = new Tagify(input, {
+      whitelist: all_tags.split(','),
+      autocomplete: false,
+      tagTemplate: function template(v, tagData) {
+        return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";
+      }
+    });
 
     var postForm = document.getElementById('post-form');
     var postEditor = new SimpleMDE({ element: document.getElementById("post-content-editor")});

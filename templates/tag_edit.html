@@ -80,9 +80,9 @@
 -->
 
 <script type="text/javascript">
-  var input = document.querySelector('input[id=input_tagify]');
 
-  var all_tags = document.getElementById("all-tags").getAttribute("all-tags")
+  var input = document.querySelector('input[id=input_tagify]');
+  var all_tags = document.getElementById("all-tags").getAttribute("all-tags");
   var tagify = new Tagify(input, {
     {% if editing %}
       maxTags: 1,
