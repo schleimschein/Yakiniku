@@ -47,8 +47,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
 
 
-
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
@@ -112,10 +110,10 @@
                   <div class="navbar-item">
                     <form action="{{ url_for('search') }}" method="POST" name="search" id="navbar_search_form">
                       <div class="control has-icons-left" id="navbar_search_control">
-                        <input class="input is-rounded" id="navbar_search_input" type="search" name="navbar_search_input">
                         <a class="icon is-left" id="navbar_search_icon" href="{{ url_for('search') }}">
                           <i class="fa fa-search"></i>
                         </a>
+                        <input class="input is-rounded" id="navbar_search_input" type="search" name="navbar-search-input">
                       </div>
                     </form>
                   </div>
@@ -239,6 +237,14 @@
           }
           else {
             searchIcon.style.pointerEvents = "none";
+          }
+        };
+
+          searchInput.onfocus = function(e)
+        {
+          if( searchInput.value.trim() !== "")
+          {
+            searchIcon.style.pointerEvents = "auto";
           }
         };
 

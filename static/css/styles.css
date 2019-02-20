@@ -152,25 +152,26 @@ body{
 
 #navbar_search_icon {
     border:none !important;
-    color: #424242 !important;
     background:transparent !important;
-    pointer-events: none !important;
+    pointer-events: none;
+    color: #424242;
 }
 
 
-#navbar_search_input:focus ~ #navbar_search_icon{
-    color: #424242 !important;
+#navbar_search_control:focus-within a:hover{
+    color: hsl(217, 71%, 53%) !important;
 }
 
-#navbar_search_input:focus ~ #navbar_search_icon{
-color: hsl(217, 71%, 53%) !important;
+#navbar_search_control:hover:not(:focus-within) a {
+    color: hsl(217, 71%, 53%) !important;
 }
 
-#navbar_search_input:focus {
+#navbar_search_control:focus-within input {
     padding-left:2.26rem !important;
     background:white !important;
     width:200px !important;
 }
+
 
 #navbar_search_input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;

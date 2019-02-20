@@ -24,8 +24,6 @@ auth.login_message = "You must be logged in to access that page."
 auth.login_message_category = "danger"
 
 
-# TODO: Paginate tables
-# TODO: Hover navbar_search_input
 # TODO: Refactor: everything
 # TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
 # TODO: Refactor: Structure of CSS
@@ -285,20 +283,31 @@ def search_view(query, page):
 
     if current_user.is_authenticated:
         if current_user.admin:
-            posts_matched_content = Post.select().where(Match(Post.content, query))
-            posts_matched_tag = Post.select().join(PostTag).join(Tag).where(
-                Match(Tag.name, query) & (not Match(Post.content, query)))
-    else:
-        posts_matched_content = Post.select().where(Post.published & Match(Post.content, query))
-        posts_matched_tag = Post.select().join(PostTag).join(Tag).where(
-            Post.published & Match(Tag.name, query) & (not Match(Post.content, query)))
+            posts_matched_content = Post.select()\
+                .where((Match(Post.content, query) == True))
+            posts_matched_title = Post.select()\
+                .where((Match(Post.title, query) == True) & (Match(Post.content, query) == False))
+            posts_matched_tag = Post.select().join(PostTag).join(Tag)\
+                .where((Match(Tag.name, query) == True) & (Match(Post.title, query) == False) & (Match(Post.content, query) == False))
 
-    posts_matched = posts_matched_content + posts_matched_tag
+
+
+    else:
+        posts_matched_content = Post.select()\
+                .where((Post.published == True) & (Match(Post.content, query) == True))
+        posts_matched_title = Post.select()\
+                .where((Post.published == True) & (Match(Post.title, query) == True) & (Match(Post.content, query) == False))
+        posts_matched_tag = Post.select().join(PostTag).join(Tag) \
+                .where((Post.published == True) & (Match(Tag.name, query) == True) & (Match(Post.title, query) == False) & (Match(Post.content, query) == False))
+
+    posts_matched = posts_matched_content + posts_matched_title + posts_matched_tag
 
     total_posts = posts_matched.count()
     posts_matched = posts_matched.paginate(page, settings.posts_per_page)
 
     posts_with_tags = []
+
+
     for post in posts_matched:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
