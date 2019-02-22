@@ -84,6 +84,8 @@ body{
     flex:1;
     display:flex;
     flex-flow: column;
+    margin: 0; /* No margin, posts (boxes) shall always fill the entire container - even if they dont have enough content */
+
 }
 
 .main-content{

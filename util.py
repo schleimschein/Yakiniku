@@ -1,6 +1,7 @@
 import re
 from models import Settings
 
+
 def slugify(text, delim=u'-'):
     _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
     """Generates an ASCII-only slug."""

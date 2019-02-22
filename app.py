@@ -14,7 +14,6 @@ from playhouse.postgres_ext import *
 from pagination import Pagination
 import util
 
-# TODO: Fix responsive layout issues
 # TODO: Refactor: everything
 # TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
 # TODO: Refactor: Structure of CSS

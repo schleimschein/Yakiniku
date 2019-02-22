@@ -57,10 +57,10 @@
           <tbody class="list" >
               {% for tag in tags %}
               <tr class="post-row"z>
-                  <td class="tag_id tag-id">
+                  <td class="tag_id tag-id" data-id="{{ tag.id }}">
                     {{ tag.id }}
                   </td>
-                  <td class="tag_name" data-name="{{ tag.name}}">
+                  <td class="tag_name" data-name="{{ tag.name }}">
                     {{ tag.name}}
                   </td>
                   <td class="tag_posts_number" data-counts="{{ tag.count}}">
@@ -173,7 +173,7 @@ $(function() {
 $(function() {
   var options = {
     valueNames: [
-      { name: 'tag_id'},
+      { name: 'tag_id', attr: 'data-id'},
       { name: 'tag_name', attr: 'data-name' },
       { name: 'tag_posts_number', attr: 'data-counts' },
       { name: 'post_date_created', attr: 'data-created'}],
