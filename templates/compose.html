@@ -66,9 +66,9 @@
             <label class="label">Tags</label>
             <p class="control">
                 {% if not editing %}
-                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %} {{tag.name}}{% endfor %}">
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %}{{ comma() }}{{tag.name}}{% endfor %}">
                 {% else %}
-                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %} {{tag.name}}{% endfor %}">
+                <input class="input" id="input_tagify" type="tags" name="post-tags" placeholder="Tags" value="{% for tag in tags_of_post %}{{ comma() }}{{tag.name}}{% endfor %}">
                 {% endif %}
                 <div id="all-tags" all-tags="{% for tag in all_tags %}{{ comma() }}{{tag.name}}{% endfor %}"></div>
 

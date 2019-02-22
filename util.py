@@ -24,5 +24,6 @@ def get_current_settings():
                                            number_of_recent_posts=5,
                                            max_synopsis_chars=500)
         current_settings.save()
-
     return current_settings
+
+

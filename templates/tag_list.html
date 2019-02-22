@@ -43,30 +43,61 @@
 {% endblock %}
 
 {% block body %}
-    <table class="table is-striped">
-        <thead>
-            <tr>
-                <td>ID</td>
-                <td>Tag</td>
-                <td>Nr. of posts</td>
-                <td>Date Created</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tag in tags %}
-            <tr class="tag-row">
-                <td class="tag-id">{{tag.id}}</td>
-                <td class="tag-name">{{tag.name}}</td>
-              <td class="tag-post-count"><a href="{{ url_for('tag_view', tag_name=tag.name) }}">{{tag.count}}</a></td>
-                <td>{{ tag.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td class="has-text-centered" colspan="3"> No Tags To Display </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <div id="tags"  style="flex-grow: 1; height: 100%; display:flex; flex-direction: column; align-content:stretch;" >
+   <div id="table-container"  style="flex-grow: 1; height: 100%; width:100%; overflow:auto; overflow-x: auto; background-color: #fff;" >
+     <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
+          <thead>
+              <tr>
+                  <th class="sort" data-sort="tag_id">ID</th>
+                  <th class="sort" data-sort="tag_name">Tag</th>
+                  <th class="sort" data-sort="tag_posts_number">Nr. of posts</th>
+                  <th class="sort" data-sort="post_date_created">Updated</th>
+              </tr>
+          </thead>
+          <tbody class="list" >
+              {% for tag in tags %}
+              <tr class="post-row"z>
+                  <td class="tag_id tag-id">
+                    {{ tag.id }}
+                  </td>
+                  <td class="tag_name" data-name="{{ tag.name}}">
+                    {{ tag.name}}
+                  </td>
+                  <td class="tag_posts_number" data-counts="{{ tag.count}}">
+                    <a href="{{ url_for('tag_view', tag_name=tag.count) }}">{{tag.count}}</a>
+                  <td class="tag_date_created" data-created="{{ tag.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                    {{ tag.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                  </td>
+              </tr>
+              {% else %}
+              <tr>
+                  <td class="has-text-centered" colspan="3"> No Tags To Display </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+   </div>
+  <nav class="level">
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <div class="control has-icons-left" id="">
+            <input class="input is-small" id="tag-search-field" size="20" type="text" placeholder="Search Tag">
+            <span class="icon is-small is-left">
+              <i class="fa fa-search"></i>
+            </span>
+        </div>
+      </div>
+    </div>
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <nav class="pagination is-right is-small" role="navigation" style="align:flex-self; " aria-label="pagination">
+      <ul class="pagination-list"></ul>
+    </nav>
+      </div>
+    </div>
+  </nav>
+ </div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -79,9 +110,9 @@ $(function() {
         var row = $(this);
 
         if (activeRow)
-            activeRow.removeClass("table-row-active")
+            activeRow.removeClass("tag-row-active")
 
-        row.addClass("table-row-active");
+        row.addClass("tag-row-active");
         id = row.find(".tag-id").html();
         tagName = row.find(".tag-name").html();
         activeRow = row;
@@ -136,4 +167,43 @@ $(function() {
 
 });
 </script>
+
+<script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
+<script type="text/javascript">
+$(function() {
+  var options = {
+    valueNames: [
+      { name: 'tag_id'},
+      { name: 'tag_name', attr: 'data-name' },
+      { name: 'tag_posts_number', attr: 'data-counts' },
+      { name: 'post_date_created', attr: 'data-created'}],
+    page: 14,
+    pagination: [{
+      paginationClass: 'pagination-list',
+      innerWindow: 5,
+      outerWindow: 1
+    }]
+
+  };
+
+  // Init list
+  var tagList = new List('tags', options);
+  var paginationList = document.getElementsByClassName("pagination")[0];
+  var paginationLinks = paginationList.children;
+  if (tagList.matchingItems.length < tagList.page) {
+    paginationList.classList.add('is-invisible');
+  }
+
+  $('#tag-search-field').keyup(function() {
+   var searchString = $(this).val();
+   tagList.search(searchString);
+});
+
+
+});
+
+
+
+</script>
+
 {% endblock %}

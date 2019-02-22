@@ -43,31 +43,67 @@
 {% endblock %}
 
 {% block body %}
-    <table class="table is-striped">
-        <thead>
-            <tr>
-                <td>User ID</td>
-                <td>Name</td>
-                <td>Nr. of posts</td>
+  <div id="users"  style="flex-grow: 1; height: 100%; display:flex; flex-direction: column; align-content:stretch;" >
+   <div id="table-container"  style="flex-grow: 1; height: 100%; width:100%; overflow:auto; overflow-x: auto; background-color: #fff;" >
+     <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
+          <thead>
+              <tr>
+                  <th class="sort" data-sort="user_id">ID</th>
+                  <th class="sort" data-sort="user_name">Name</th>
+                  <th class="sort" data-sort="user_post_count">Number of posts</th>
+                  <th class="sort" data-sort="user_role">Role</th>
+                  <th class="sort" data-sort="post_date_created">Created</th>
+              </tr>
+          </thead>
+          <tbody class="list" >
+              {% for user in users_with_post_counts %}
+              <tr class="user-row"z>
+                  <td class="user_id user-id" data-id="{{ user.id }}">
+                    {{ user.id }}
+                  </td>
+                  <td class="user_name" data-name="{{ user.name }}">
+                    <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name }}</a>
+                  </td>
+                  <td class="user_post_count" data-count="{{ user.count }}">
+                    <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.count}}</a>
+                  <td class="user_role" data-role="{% if user.admin%}Admin{% elif not user.admin %}None{% endif %}">
+                    <span>{% if user.admin%}Admin{% elif not user.admin %}None{% endif %}</span>
+                  </td>
+                  <td class="user_date_created" data-created="{{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                    {{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                  </td>
+              </tr>
+              {% else %}
+              <tr>
+                  <td class="has-text-centered" colspan="3"> No Users To Display </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+   </div>
+  <nav class="level">
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <div class="control has-icons-left" id="">
+            <input class="input is-small" id="user-search-field" size="20" type="text" placeholder="Search User">
+            <span class="icon is-small is-left">
+              <i class="fa fa-search"></i>
+            </span>
+        </div>
+      </div>
+    </div>
+    <div class="level-left">
+      <div class="level-item" style="margin-top:12px;">
+        <nav class="pagination is-right is-small" role="navigation" style="align:flex-self; " aria-label="pagination">
+      <ul class="pagination-list"></ul>
+    </nav>
+      </div>
+    </div>
+  </nav>
+ </div>
 
-                <td>Date Created</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users_with_post_counts %}
-            <tr class="user-row">
-                <td class="user-id">{{ user.id }}</td>
-                <td class="user-name">{{ user.name }}</td>
-                <td class="user-post-count"> <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.count }}</a></td>
-                <td>{{ user.created_at }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td class="has-text-centered" colspan="3"> No Users To Display </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+
 {% endblock %}
 
 {% block javascript %}
@@ -135,5 +171,44 @@ $(function() {
         }
     });
 });
+</script>
+
+
+<!-- Fancy table functions via list_with_bulma.js. Unfortunately we have to tinker a bit with the pagination classes :/ -->
+<script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
+<script type="text/javascript">
+$(function() {
+  var options = {
+    valueNames: [
+      { name: 'user_id', attr: 'data-id'},
+      { name: 'user_name', attr: 'data-name'},
+      { name: 'user_count', attr: 'data-count'},
+      { name: 'user_role', attr: 'data-role'},
+      { name: 'user_date_created', attr: 'data-created'}],
+    page: 14,
+    pagination: [{
+      paginationClass: 'pagination-list',
+      innerWindow: 5,
+      outerWindow: 1
+    }]
+
+  };
+
+  // Init list
+  var userList = new List('users', options);
+  var paginationList = document.getElementsByClassName("pagination")[0];
+  var paginationLinks = paginationList.children;
+  if (userList.matchingItems.length < userList.page) {
+    paginationList.classList.add('is-invisible');
+  }
+
+  $('#user-search-field').keyup(function() {
+   var searchString = $(this).val();
+   userList.search(searchString);
+  });
+});
+
+
+
 </script>
 {% endblock %}

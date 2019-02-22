@@ -71,6 +71,7 @@ class PostUser(Model):
 class Tag(Model):
     name = CharField(unique=True)
     created_at = DateTimeField(default=datetime.now)
+    updated_at = DateTimeField(default=datetime.now)
 
     class Meta:
         database = postgres_db

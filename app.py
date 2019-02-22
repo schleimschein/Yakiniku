@@ -14,16 +14,7 @@ from playhouse.postgres_ext import *
 from pagination import Pagination
 import util
 
-app = Flask(__name__)
-app.config.from_object("config.Config")
-
-auth = LoginManager()
-auth.init_app(app)
-auth.login_view = "login"
-auth.login_message = "You must be logged in to access that page."
-auth.login_message_category = "danger"
-
-
+# TODO: Fix responsive layout issues
 # TODO: Refactor: everything
 # TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
 # TODO: Refactor: Structure of CSS
@@ -32,12 +23,84 @@ auth.login_message_category = "danger"
 # TODO: Minimize static components
 # TODO: Slugs
 
+########################################
+### Initializing and defining Stuff  ###
+########################################
 
+### Initialize app ###
+app = Flask(__name__)
+app.config.from_object("config.Config")
+
+
+### Initialize database ###
+# @app.before_request
+# def before_request():
+#     postgres_db.connect()
+#
+# @app.after_request
+# def after_request(response):
+#     postgres_db.close()
+#     return response
+
+# Before first request: Create database tables. Make sure to have the postgres extension 'hstore' installed on the db.
+@app.before_first_request
+def setup_database():
+    postgres_db.create_tables([User, Post, PostUser, Tag, PostTag, Settings], safe=True)
+
+    # Adding gin index to Post.content and Tag.name for faster search
+    language = 'english'
+
+    Post.add_index(
+        SQL("CREATE INDEX post_full_text_search ON post USING GIN(to_tsvector('" + language + '\',content))'))
+    Tag.add_index(
+        SQL("CREATE INDEX tag_full_text_search ON tag USING GIN(to_tsvector('" + language + '\', name))'))
+
+
+### Initialize authentification ###
+auth = LoginManager()
+auth.init_app(app)
+
+# Define auth login behaviour
+auth.login_view = "login"
+auth.login_message = "You must be logged in to access that page."
+auth.login_message_category = "danger"
+
+# Wrapper that checks if current user is admin. If not return an error flash
+def admin_required(f):
+    @wraps(f) # Fixes docstrings and names of decorated function
+    def wrapper(*args, **kwargs):
+        if not current_user.admin:
+            flash("You need administrator privileges to access this page.", "danger")
+            return redirect(url_for('blog'))
+        return f(*args, **kwargs)
+    return wrapper
+
+# Wrapper for getting a user by id
+@auth.user_loader # Callback for retrieving a user object.
+def user_loader(uid):
+    user = None
+    try:
+        user = User.get(User.id == uid)
+    except User.DoesNotExist:
+        pass
+    return user
+
+
+### Jinja Templates ###
+
+# Make settings available to all jinja templates
 @app.context_processor
-def recent_post_context_processor():
-    settings = util.get_current_settings()
-    return {'recent_posts': Post.select().order_by(Post.created_at.desc()).limit(settings.number_of_recent_posts)}
+def settings_context_processor():
+    settings = model_to_dict(util.get_current_settings())
+    values = {'settings': settings}
+    return values
 
+# Create a jinja filter that can handle markdown
+@app.template_filter('Markdown')
+def filter_markdown(raw_markdown):
+    return jinja2.Markup(markdown.markdown(raw_markdown, extensions=[GithubMarkdown()]))
+
+# Uncomment this if you want the most used tags available to all jinja templates as a variable.
 # @app.context_processor
 # def top_tags_context_processor():
 #     values = {}
@@ -55,61 +118,20 @@ def recent_post_context_processor():
 #     values['top_tags'] = list(sorted_tags)[0:10]
 #     return values
 
-@app.context_processor
-def settings_context_processor():
-    settings = model_to_dict(util.get_current_settings())
-    values = {'settings': settings}
-    return values
+# Uncomment this if you want the most recents posts available on all sites as a jinja variable.
+# @app.context_processor
+# def recent_post_context_processor():
+#     settings = util.get_current_settings()
+#     return {'recent_posts': Post.select().order_by(Post.created_at.desc()).limit(settings.number_of_recent_posts)}
 
 
-@app.template_filter('Markdown')
-def filter_markdown(raw_markdown):
-    return jinja2.Markup(markdown.markdown(raw_markdown, extensions=[GithubMarkdown()]))
 
 
-def admin_required(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if not current_user.admin:
-            flash("You need administrator privileges to access this page.", "danger")
-            return redirect(url_for('blog'))
-        return f(*args, **kwargs)
+########################################
+###             Routes               ###
+########################################
 
-    return wrapper
-
-
-@auth.user_loader
-def user_loader(uid):
-    user = None
-    try:
-        user = User.get(User.id == uid)
-    except User.DoesNotExist:
-        pass
-    return user
-
-
-@app.before_first_request
-def setup_database():
-    postgres_db.create_tables([User, Post, PostUser, Tag, PostTag, Settings], safe=True)
-
-    # Adding gin index to Post.content and Tag.name for faster search
-    language = 'english'
-
-    Post.add_index(
-        SQL("CREATE INDEX post_full_text_search ON post USING GIN(to_tsvector('" + language + '\',content))'))
-    Tag.add_index(
-        SQL("CREATE INDEX tag_full_text_search ON tag USING GIN(to_tsvector('" + language + '\', name))'))
-
-
-# @app.before_request
-# def before_request():
-#     postgres_db.connect()
-#
-# @app.after_request
-# def after_request(response):
-#     postgres_db.close()
-#     return response
-
+# Create a standard admin user. Production only!!! TODO: REMOVE!!!
 @app.route('/init')
 def init_user():
     try:
@@ -124,30 +146,20 @@ def init_user():
     else:
         return redirect(url_for('login'))
 
+### Login / Logout ###
 
-@app.route('/index')
-@app.route('/')
-def index():
-    return redirect("blog")
-
-
+# Login view
 @app.route('/login')
 def login():
     if current_user.is_authenticated:
         if current_user.admin:
             return redirect(url_for('admin_main'))
-        elif not current_user.admin:
-            return redirect(url_for('blog'))
+        elif not current_user.admin:            # Being a user without being admin is a bit useless rightnow.
+            return redirect(url_for('blog'))    # For extending?
     else:
         return render_template('login.html')
 
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
-
-
+# Login
 @app.route('/login/go', methods=["POST"])
 def do_login():
     username = request.form.get("username", False)
@@ -171,7 +183,22 @@ def do_login():
 
     return redirect(url_for('login'))
 
+# Logout
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
+
+### Actual blog ###
+
+# Index url redirects
+@app.route('/index')
+@app.route('/')
+def index():
+    return redirect("blog")
+
+# Frontpage view
 @app.route('/blog/archive/<int:page>')
 @app.route('/blog/archive', defaults={'page': 1})
 @app.route('/blog', defaults={'page': 1})
@@ -196,7 +223,7 @@ def blog(page):
 
     return render_template('blog.html', posts_with_tags=posts_with_tags, pages=pages)
 
-
+# Post view
 @app.route('/post/<int:pid>')
 def post(pid, ):
     post = None
@@ -210,7 +237,7 @@ def post(pid, ):
         abort(404)
     return render_template('post_view.html', post=post, tags=tags, user=user)
 
-
+# Blog view of all posts with a certain tag
 @app.route('/tag/<tag_name>', defaults={'page': 1})
 @app.route('/tag/<tag_name>/<int:page>')
 def tag_view(tag_name, page):
@@ -218,29 +245,29 @@ def tag_view(tag_name, page):
 
     if current_user.is_authenticated:
         if current_user.admin:
-            matches = Post.select().join(PostTag).join(Tag).where(Tag.name == tag_name).order_by(
-                Post.created_at.desc())
+            matches = Post.select().join(PostTag).join(Tag)\
+                .where(Tag.name == tag_name).order_by(Post.created_at.desc())
     else:
-        matches = Post.select().where(Post.published).join(PostTag).join(Tag).where(Tag.name == tag_name).order_by(
-            Post.created_at.desc())
+        matches = Post.select().where(Post.published).join(PostTag).join(Tag)\
+            .where(Tag.name == tag_name).order_by(Post.created_at.desc())
 
-    total_matches = matches.count()
+    number_of_matches = matches.count()
     matches = matches.paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
     for match in matches:
-        tags = Tag.select().join(PostTag).where(PostTag.post == match).order_by(Tag.name)
+        tags = Tag.select().join(PostTag)\
+            .where(PostTag.post == match).order_by(Tag.name)
         matches_with_tags.append([match, tags])
 
-    pages = Pagination(page, settings.posts_per_page, total_matches, 7)
-    # .order_by(Post.created_at.desc()).limit(5)
+    pages = Pagination(page, settings.posts_per_page, number_of_matches, 7)
 
     if not len(matches) == 0:
         return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
     else:
         return render_template('404.html', notice="No posts with this tag")
 
-
+# Blog view of all posts by a certain user
 @app.route('/user/<user_name>', defaults={'page': 1})
 @app.route('/user/<user_name>/<int:page>')
 def user_view(user_name, page):
@@ -248,37 +275,40 @@ def user_view(user_name, page):
 
     if current_user.is_authenticated:
         if current_user.admin:
-            matches = Post.select().join(PostUser).join(User).where(User.name == user_name).order_by(
-                Post.created_at.desc())
+            matches = Post.select().join(PostUser).join(User)\
+                .where(User.name == user_name).order_by(Post.created_at.desc())
     else:
-        matches = Post.select().where(Post.published).join(PostUser).join(User).where(User.name == user_name).order_by(
-            Post.created_at.desc())
+        matches = Post.select().where(Post.published).join(PostUser).join(User)\
+            .where(User.name == user_name).order_by(Post.created_at.desc())
 
     total_matches = matches.count()
     matches = matches.paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
     for match in matches:
-        tags = Tag.select().join(PostTag).where(PostTag.post == match).order_by(Tag.name)
+        tags = Tag.select().join(PostTag)\
+            .where(PostTag.post == match).order_by(Tag.name)
         matches_with_tags.append([match, tags])
 
     pages = Pagination(page, settings.posts_per_page, total_matches, 7)
-    # .order_by(Post.created_at.desc()).limit(5)
+
     if not len(matches) == 0:
         return render_template('user_view.html', posts_with_tags=matches_with_tags, pages=pages, user_name=user_name)
     return render_template('404.html', notice="No posts by this user")
 
 
+# Search
 @app.route('/search', methods=["POST"])
 def search():
     query = request.form.get('navbar-search-input')
     return redirect(url_for('search_view', query=query))
 
-
+# Blog view of all search results (posts appear only once, despite several matches in title, content and tags)
 @app.route('/search/<query>', defaults={'page': 1})
 @app.route('/search/<query>/<int:page>')
 def search_view(query, page):
     settings = util.get_current_settings()
+
     query = "\'" + query + "\'" # the quotation marks are absolutely necessary for a pg tsquery with multiple words
 
     if current_user.is_authenticated:
@@ -286,36 +316,50 @@ def search_view(query, page):
             posts_matched_content = Post.select()\
                 .where((Match(Post.content, query) == True))
             posts_matched_title = Post.select()\
-                .where((Match(Post.title, query) == True) & (Match(Post.content, query) == False))
+                .where((Match(Post.title, query) == True)
+                       & (Match(Post.content, query) == False))
             posts_matched_tag = Post.select().join(PostTag).join(Tag)\
-                .where((Match(Tag.name, query) == True) & (Match(Post.title, query) == False) & (Match(Post.content, query) == False))
+                .where((Match(Tag.name, query) == True)
+                       & (Match(Post.title, query) == False)
+                       & (Match(Post.content, query) == False))
 
 
 
     else:
         posts_matched_content = Post.select()\
-                .where((Post.published == True) & (Match(Post.content, query) == True))
+                .where((Post.published == True)
+                       & (Match(Post.content, query) == True))
         posts_matched_title = Post.select()\
-                .where((Post.published == True) & (Match(Post.title, query) == True) & (Match(Post.content, query) == False))
+                .where((Post.published == True)
+                       & (Match(Post.title, query) == True)
+                       & (Match(Post.content, query) == False))
         posts_matched_tag = Post.select().join(PostTag).join(Tag) \
-                .where((Post.published == True) & (Match(Tag.name, query) == True) & (Match(Post.title, query) == False) & (Match(Post.content, query) == False))
+                .where((Post.published == True)
+                       & (Match(Tag.name, query) == True)
+                       & (Match(Post.title, query) == False)
+                       & (Match(Post.content, query) == False))
 
     posts_matched = posts_matched_content + posts_matched_title + posts_matched_tag
 
-    total_posts = posts_matched.count()
+    number_of_matched_posts = posts_matched.count()
     posts_matched = posts_matched.paginate(page, settings.posts_per_page)
 
     posts_with_tags = []
-
-
     for post in posts_matched:
-        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        tags = Tag.select().join(PostTag)\
+            .where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
 
-    pages = Pagination(page, settings.posts_per_page, total_posts, 7)
-    return render_template('search_view.html', posts_with_tags=posts_with_tags, pages=pages, query=query, current=search_view)
+    pages = Pagination(page, settings.posts_per_page, number_of_matched_posts, 7)
+
+    return render_template('search_view.html',
+                           posts_with_tags=posts_with_tags,
+                           pages=pages,
+                           query=query,
+                           current=search_view)
 
 
+# Preview a post below the compose view
 @app.route('/admin/preview', methods=["POST"])
 @login_required
 @admin_required
@@ -324,7 +368,7 @@ def preview():
     date_time = datetime.datetime.now().strftime("%B %d, %Y")
     return jsonify(html=html, date_time=date_time)
 
-
+# View to create a post
 @app.route('/admin/posts/compose')
 @login_required
 @admin_required
@@ -332,7 +376,7 @@ def compose():
     all_tags = Tag.select()
     return render_template('compose.html', editing=False, all_tags=all_tags)
 
-
+# Edit a post via the compose view
 @app.route('/admin/posts/edit/<pid>')
 @login_required
 @admin_required
@@ -341,15 +385,20 @@ def admin_edit_post(pid):
 
     try:
         post = Post.get(pid == Post.id)
-        tags_of_post = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        tags_of_post = Tag.select().join(PostTag).join(Post)\
+            .where(Post.id == post.id).order_by(Tag.name)
         all_tags = Tag.select()
     except Post.DoesNotExist:
         abort(404)
 
-    return render_template('compose.html', editing=True, pid=pid, post=post, tags_of_post=tags_of_post,
+    return render_template('compose.html',
+                           editing=True,
+                           pid=pid,
+                           post=post,
+                           tags_of_post=tags_of_post,
                            all_tags=all_tags)
 
-
+# Save a created or edited post
 @app.route('/admin/posts/save', methods=["POST"])
 @login_required
 @admin_required
@@ -360,11 +409,12 @@ def admin_save_post():
     content = request.form.get('post-content')
     description = request.form.get('post-description')
     tags_json = json.loads(request.form.get('post-tags'))
-    tags = [ tag_json["value"] for tag_json in tags_json ]
     publish = True if request.form.get('post-publish') == 'on' else False
 
     if edit_id:
         try:
+            tags = [tag_json["value"] for tag_json in tags_json]
+
             post = Post.get(Post.id == edit_id)
             post.title = title
             post.content = content
@@ -374,11 +424,11 @@ def admin_save_post():
             post.published = publish
             post.save()
 
-            for tag in tags:
-                tag, _ = Tag.get_or_create(name=tag)
-                PostTag.get_or_create(post=post, tag=tag)
+            for tag_name in tags:
+                tag, _ = Tag.get_or_create(name=tag_name)
+                posttag, _ = PostTag.get_or_create(post=post, tag=tag)
 
-            old_tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+            old_tags = Tag.select().join(PostTag).join(Post).where(Post == post).order_by(Tag.name)
             for old_tag in old_tags:
                 if not old_tag in tags:
                     PostTag.get(PostTag.post == post, PostTag.tag == old_tag).delete_instance()
@@ -390,6 +440,8 @@ def admin_save_post():
 
     else:
         try:
+            tags = [tag_json["value"] for tag_json in tags_json]
+
             post = Post(title=title,
                         content=content,
                         slug=slug,
@@ -401,7 +453,7 @@ def admin_save_post():
 
             for tag_name in tags:
                 tag, _ = Tag.get_or_create(name=tag_name)
-                PostTag.get_or_create(post=post, tag=tag)
+                posttag, _ = PostTag.get_or_create(post=post, tag=tag)
 
 
             if publish:
@@ -414,14 +466,14 @@ def admin_save_post():
 
     return redirect(url_for('admin_post_list'))
 
-
+# 'Index' view of the admin part of the app
 @app.route('/admin')
 @login_required
 @admin_required
 def admin_main():
     return redirect(url_for('admin_post_list'))
 
-
+# Table view of all posts
 @app.route('/admin/posts')
 @login_required
 @admin_required
@@ -430,33 +482,39 @@ def admin_post_list():
 
     posts_with_user_and_tags = []
     for post in posts:
-        tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
+        tags = Tag.select().join(PostTag).join(Post).where(Post.id == post.id).order_by(Tag.name)
         user = User.select().join(PostUser, peewee.JOIN.LEFT_OUTER).where(PostUser.post == post)
         if user:
             user = user[0]  # Accessing the first (and only) result of the query... if a postuser existed
         posts_with_user_and_tags.append([post, user, tags])
 
+    posts_with_user_and_tags = sorted(posts_with_user_and_tags,
+                                      key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at,
+                                      reverse=True)
 
-    order_by = request.args.get('order_by')
-    order = request.args.get('order')
-
-    if (order_by == 'title' and order == 'asc' ):
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower() )
-    elif(order_by == 'title' and order == 'desc' ):
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower(), reverse=True )
-    elif (order_by == 'user' and order == 'asc'):
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower() )
-    elif (order_by == 'user' and order == 'desc'):
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower(), reverse=True )
-    elif (order_by == 'updated_at' and order == 'asc'):
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at )
-    else:
-        posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at, reverse=True )
-        order_by = 'updated_at'
-        order = 'desc'
-    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags, order_by=order_by, order=order)
+    return render_template('post_list.html', posts_with_user_and_tags=posts_with_user_and_tags)
 
 
+    # Legacy sort code to use if list js isnt wanted anymore
+    #order_by = request.args.get('order_by')
+    #order = request.args.get('order')
+    #if (order_by == 'title' and order == 'asc' ):
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower() )
+    #elif(order_by == 'title' and order == 'desc' ):
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].title.lower(), reverse=True )
+    #elif (order_by == 'user' and order == 'asc'):
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower() )
+    #elif (order_by == 'user' and order == 'desc'):
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[1].name.lower(), reverse=True )
+    #elif (order_by == 'updated_at' and order == 'asc'):
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at )
+    #else:
+    #    posts_with_user_and_tags = sorted(posts_with_user_and_tags, key=lambda post_with_user_and_tag: post_with_user_and_tag[0].updated_at, reverse=True )
+    #    order_by = 'updated_at'
+    #    order = 'desc'
+
+
+# Delete a post
 @app.route('/admin/posts/delete', methods=["POST"])
 @login_required
 @admin_required
@@ -495,6 +553,7 @@ def admin_post_delete():
     return json.dumps(status)
 
 
+# Table view of all tags - number of tagged posts with link to blog view of these posts
 @app.route('/admin/tags')
 @login_required
 @admin_required
@@ -533,11 +592,11 @@ def admin_tag_edit(uid):
 def admin_tag_save():
 
     tags_json = json.loads(request.form.get('tags'))
-    tags = [ tag_json["value"] for tag_json in tags_json ]
     edit_id = request.form.get('tag-edit-id')
 
     if edit_id:
         try:
+            tags = [tag_json["value"] for tag_json in tags_json]
             tag_to_edit = Tag.get(Tag.id == edit_id)
             tag_to_edit.name = tags[0]
             tag_to_edit.save()
@@ -547,6 +606,8 @@ def admin_tag_save():
             abort(404)
 
     else:
+        tags = [tag_json["value"] for tag_json in tags_json]
+
         successes = []
         for tag in tags:
             t, created = Tag.get_or_create(name=tag)
@@ -789,6 +850,10 @@ def admin_settings_save():
 def page_not_found(e):
     notice = """Nothing to see here"""
     return render_template('404.html', notice=notice), 404
+
+@app.errorhandler(DatabaseError)
+def special_exception_handler(error):
+    return 'Database connection failed', 500
 
 
 

@@ -66,13 +66,12 @@
                   <th class="sort" data-sort="post_user">User</th>
                   <th class="sort" data-sort="post_date_posted">Posted</th>
                   <th class="sort" data-sort="post_date_updated">Updated</th>
-
               </tr>
           </thead>
           <tbody class="list" >
               {% for post,user,tags in posts_with_user_and_tags %}
               <tr class="post-row"z>
-                  <td class="post_id post-id">
+                  <td class="post_id post-id" data-id="{{ post.id }}">
                     {{ post.id }}
                   </td>
                   <td class="post_title" data-title="{{ post.title }}">
@@ -84,19 +83,19 @@
                     <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
                   {% endfor %}
                   <td class="post_published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
-                    <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span></td>
+                    <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span>
                   </td>
-                  <td class="post_user">
+                  <td class="post_user" data-user="{% if user %}{{ user.name }}{% endif %}">
                   {% if user %}
                     <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a>
                   {% elif not user %}
                     Deleted
                   {% endif %}
                   </td>
-                  <td class="post_date_posted">
+                  <td class="post_date_posted" data-posted="{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
-                  <td class="post_date_updated">
+                  <td class="post_date_updated" data-updated="{{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
               </tr>
@@ -141,7 +140,7 @@ $(function() {
         var row = $(this);
 
         if (activeRow)
-            activeRow.removeClass("post-row-active")
+            activeRow.removeClass("post-row-active");
 
         row.addClass("post-row-active");
         id = row.find(".post-id").html();
@@ -199,12 +198,14 @@ $(function() {
 <script type="text/javascript">
 $(function() {
   var options = {
-    valueNames: ['post_id',
-      { name: 'post_title', attr: 'data-title' },
-      { name: 'post_tags', attr: 'data-tags' },
-      { name: 'post_published', attr: 'data-published' },
-      'post_user', 'post_date_posted',
-      'post_date_updated'],
+    valueNames: [
+      { name: 'post_id', attr: 'data-id'},
+      { name: 'post_title', attr: 'data-title'},
+      { name: 'post_tags', attr: 'data-tags'},
+      { name: 'post_published', attr: 'data-published'},
+      { name: 'post_user', attr: 'data-user'},
+      { name: 'post_date_posted', attr: 'data-posted'},
+      { name: 'post_date_updated', attr: 'data-updated'}],
     page: 14,
     pagination: [{
       paginationClass: 'pagination-list',
@@ -225,12 +226,8 @@ $(function() {
   $('#post-search-field').keyup(function() {
    var searchString = $(this).val();
    postList.search(searchString);
+  });
 });
-
-
-});
-
-
 
 </script>
 
