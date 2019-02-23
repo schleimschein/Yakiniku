@@ -4,24 +4,32 @@
 
 
 {% block body %}
-<div class="container">
-    <div class="columns">
-        <div class="column is-4"></div>
-        <div class="column is-4">
-            <h3>Login</h3>
+<div class="container" id="login-container">
+  <div class="columns">
+        <div class="column is-one-third is-offset-one-third">
             <form action="{{ url_for('do_login') }}" method="POST">
-                <p class="control">
+
+              <div class="field">
+                <label class="label">Login</label>
+
+                <div class="control">
                     <input class="input" type="text" name="username" placeholder="Username">
-                </p>
+                </div>
+              </div>
+              <div class="field">
 
-                <p class="control">
+                <div class="control">
                     <input class="input" type="password" name="password" placeholder="Password">
-                </p>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control">
+                  <button class="button is-pulled-right is-primary">Login</button>
+                </div>
+              </div>
 
-                <button class="button is-primary">Login</button>
             </form>
         </div>
-        <div class="column is-4"></div>
     </div>
 </div>
 {% endblock %}

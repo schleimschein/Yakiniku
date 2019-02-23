@@ -8,6 +8,9 @@ body{
     flex-direction: column;
 }
 
+
+
+
 .logo-text {
     font-size:1.5em;
 }
@@ -199,6 +202,14 @@ body{
 .blog-post-card-icons .icon:hover
 {
     color: hsl(217, 71%, 53%);
+}
+
+#login-container{
+    display: flex;
+    flex-flow: column;
+    height: 65%;
+    justify-content: center;
+    margin: 0;
 }
 
 table .sort:before {

@@ -119,8 +119,7 @@ $(function() {
             activeRow.removeClass("table-row-active");
 
         row.addClass("table-row-active");
-        id = row.find(".user-id").html();
-        userName = row.find(".user-name").html();
+        var id = row.find(".user-id").html();
 
         activeRow = row;
         activeRowId = id;
@@ -162,6 +161,7 @@ $(function() {
     $("#action-show-post-of-user").click(function(e) {
         if(activeRowId)
         {
+                var userName = row.find(".user_name").html();
 
                 window.location = "/user/" + userName  ;
         }
