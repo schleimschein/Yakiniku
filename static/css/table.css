@@ -1,0 +1,20 @@
+.list-row-active {
+    background-color:#bcfffc !important;
+}
+
+table .sort:before {
+	font-family: FontAwesome;
+	font-size: 0.75em;
+	color: #333;
+	font-weight: lighter;
+	content: "\f0dc";
+	padding-right: 0.7em;
+}
+
+table .sort.asc:before {
+	content: "\f0de";
+}
+
+table .sort.desc:before {
+	content: "\f0dd";
+}

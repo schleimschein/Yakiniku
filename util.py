@@ -22,8 +22,8 @@ def get_current_settings():
                                            icon_2_link='',
                                            icon_2_icon_type='linkedin',
                                            posts_per_page=10,
-                                           number_of_recent_posts=5,
-                                           max_synopsis_chars=500)
+                                           max_synopsis_chars=500,
+                                           table_entries_per_page=14)
         current_settings.save()
     return current_settings
 

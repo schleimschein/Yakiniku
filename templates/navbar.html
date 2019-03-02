@@ -1,0 +1,76 @@
+<nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
+
+    <div class="navbar-brand">
+        <a class="navbar-item" href="{{url_for('index')}}">
+            <span class="logo-text">{{ settings.blog_title }} ::</span>
+        </a>
+
+        <button class="button navbar-burger" data-target="navMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+    </div>
+
+    <div class="navbar-menu" id="navMenu">
+
+      {% if current_user.admin %}
+        <div class="navbar-start">
+          <a class="navbar-item is-tab{% if (request.path == url_for('admin_post_list') or request.path == url_for('admin_main')) %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
+              Posts
+          </a>
+          <a class="navbar-item is-tab{% if request.path == url_for('admin_tag_list') %} is-active {% endif %}" href="{{ url_for('admin_tag_list') }}">
+              Tags
+          </a>
+
+          <a class="navbar-item is-tab{% if request.path == url_for('admin_user_list') %} is-active {% endif %}" href="{{ url_for('admin_user_list') }}">
+              Users
+          </a>
+          <a class="navbar-item is-tab{% if request.path == url_for('admin_settings') %} is-active {% endif %}" href="{{ url_for('admin_settings') }}">
+              Settings
+          </a>
+        </div>
+      {% endif %}
+
+
+      <div class="navbar-end">
+
+          <a class="navbar-item {% if request.path == settings.icon_1_link %} is-active {% endif %}" href="{{settings.icon_1_link}}">
+              <i class="fa fa-{{settings.icon_1_icon_type}}"></i>
+          </a>
+          <a class="navbar-item {% if request.path == settings.icon_2_link %} is-active {% endif %}" href="{{settings.icon_2_link}}">
+              <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
+          </a>
+          <div class="navbar-item">
+            <form action="{{ url_for('search') }}" method="POST" name="search" id="navbar_search_form">
+              <div class="control has-icons-left" id="navbar-search-control">
+                <a class="icon is-left" id="navbar-search-icon" href="{{ url_for('search') }}">
+                  <i class="fa fa-search"></i>
+                </a>
+                <input class="input is-rounded" id="navbar-search-input" type="search" name="navbar-search-input" autocomplete="off">
+              </div>
+            </form>
+          </div>
+
+      </div>
+
+
+      {% if current_user.is_authenticated %}
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            {{ current_user.name }}
+          </a>
+
+          <div class="navbar-dropdown is-boxed">
+            <a class="navbar-item" href="{{ url_for('profile_user_edit') }}">
+              Profile
+            </a>
+            <a class="navbar-item" href="{{ url_for('logout') }}">
+              Logout
+            </a>
+                <!-- <i class="fa fa-caret-down"></i> -->
+          </div>
+        </div>
+      {% endif %}
+    </div>
+</nav>

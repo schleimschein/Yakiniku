@@ -14,11 +14,10 @@ from playhouse.postgres_ext import *
 from pagination import Pagination
 import util
 
+# TODO: Proper exception/abort cases
+# TODO: If navburger dropdown always extend search field
+# TODO: Synopsis of posts
 # TODO: Refactor: everything
-# TODO: Refactor: CSS Class names ( _ -> - ), and CSS IDs
-# TODO: Refactor: Structure of CSS
-# TODO: Refactor: Structure of app.py
-# TODO: Refactor: SQL Queries
 # TODO: Minimize static components
 # TODO: Slugs
 
@@ -32,6 +31,7 @@ app.config.from_object("config.Config")
 
 
 ### Initialize database ###
+
 # @app.before_request
 # def before_request():
 #     postgres_db.connect()
@@ -98,6 +98,9 @@ def settings_context_processor():
 @app.template_filter('Markdown')
 def filter_markdown(raw_markdown):
     return jinja2.Markup(markdown.markdown(raw_markdown, extensions=[GithubMarkdown()]))
+
+app.jinja_env.trim_blocks = True
+app.jinja_env.lstrip_blocks = True
 
 # Uncomment this if you want the most used tags available to all jinja templates as a variable.
 # @app.context_processor
@@ -176,7 +179,7 @@ def do_login():
                 flash("Username or password incorrect.", "danger")
                 return redirect(url_for('login'))
         except User.DoesNotExist:
-            flash("User does not exist.", "danger")
+            flash("Username or password incorrect.", "danger")
     else:
         flash("Username and password required.", "danger")
 
@@ -264,7 +267,7 @@ def tag_view(tag_name, page):
     if not len(matches) == 0:
         return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
     else:
-        return render_template('404.html', notice="No posts with this tag")
+        return render_template('40x.html', notice="No posts with this tag")
 
 # Blog view of all posts by a certain user
 @app.route('/user/<user_name>', defaults={'page': 1})
@@ -293,7 +296,7 @@ def user_view(user_name, page):
 
     if not len(matches) == 0:
         return render_template('user_view.html', posts_with_tags=matches_with_tags, pages=pages, user_name=user_name)
-    return render_template('404.html', notice="No posts by this user")
+    return render_template('40x.html', notice="No posts by this user")
 
 
 # Search
@@ -363,7 +366,8 @@ def search_view(query, page):
 @login_required
 @admin_required
 def preview():
-    html = markdown.markdown(request.form['post_content_as_markdown'], extensions=[GithubMarkdown()])
+    data = request.get_json()
+    html = markdown.markdown(data['postContent_markdown'], extensions=[GithubMarkdown()])
     date_time = datetime.datetime.now().strftime("%B %d, %Y")
     return jsonify(html=html, date_time=date_time)
 
@@ -402,66 +406,71 @@ def admin_edit_post(pid):
 @login_required
 @admin_required
 def admin_save_post():
+
     edit_id = request.form.get('post-edit-id')
-    title = request.form.get('post-title')
+    title = request.form.get('post-form-title')
     slug = util.slugify(title)
-    content = request.form.get('post-content')
-    description = request.form.get('post-description')
-    tags_json = json.loads(request.form.get('post-tags'))
-    publish = True if request.form.get('post-publish') == 'on' else False
+    content = request.form.get('post-form-content')
+    description = request.form.get('post-form-description')
+    tags = request.form.get('post-form-tags')
+    publish = request.form.get('post-form-publish')
 
-    if edit_id:
-        try:
-            tags = [tag_json["value"] for tag_json in tags_json]
+    tags = [tag_json["value"] for tag_json in json.loads(tags)] if tags else None
+    publish = True if publish == 'on' else False
 
-            post = Post.get(Post.id == edit_id)
-            post.title = title
-            post.content = content
-            post.slug = slug
-            post.description = description
-            post.updated_at = datetime.datetime.now()
-            post.published = publish
-            post.save()
+    if title or content or description:
+        if edit_id:
+            try:
+                post = Post.get(Post.id == edit_id)
+                post.title = title
+                post.content = content
+                post.slug = slug
+                post.description = description
+                post.updated_at = datetime.datetime.now()
+                post.published = publish
+                post.save()
 
-            for tag_name in tags:
-                tag, _ = Tag.get_or_create(name=tag_name)
-                posttag, _ = PostTag.get_or_create(post=post, tag=tag)
+                if tags is not None:
+                    for tag_name in tags:
+                        tag, _ = Tag.get_or_create(name=tag_name)
+                        posttag, _ = PostTag.get_or_create(post=post, tag=tag)
 
-            old_tags = Tag.select().join(PostTag).join(Post).where(Post == post).order_by(Tag.name)
-            for old_tag in old_tags:
-                if not old_tag in tags:
-                    PostTag.get(PostTag.post == post, PostTag.tag == old_tag).delete_instance()
+                old_tags = Tag.select().join(PostTag).join(Post).where(Post == post).order_by(Tag.name)
+                for old_tag in old_tags:
+                    if not old_tag in tags:
+                        PostTag.get(PostTag.post == post, PostTag.tag == old_tag).delete_instance()
 
-            flash("Post edited!", "success")
+                flash("Post edited!", "success")
 
-        except Post.DoesNotExist:
-            abort(404)
+            except Post.DoesNotExist:
+                abort(404)
 
+        else:
+            try:
+                post = Post(title=title,
+                            content=content,
+                            slug=slug,
+                            description=description,
+                            published=publish)
+                post.save()
+                postuser = PostUser(post=post, user=current_user.id)
+                postuser.save()
+
+                if tags is not None:
+                    for tag_name in tags:
+                        tag, _ = Tag.get_or_create(name=tag_name)
+                        posttag, _ = PostTag.get_or_create(post=post, tag=tag)
+
+                if publish:
+                    flash("Post published!", "success")
+                elif not publish:
+                    flash("Post saved as draft!", "success")
+
+            except peewee.IntegrityError:
+                print("peewee.IntegrityError")
+                abort(404)
     else:
-        try:
-            tags = [tag_json["value"] for tag_json in tags_json]
-
-            post = Post(title=title,
-                        content=content,
-                        slug=slug,
-                        description=description,
-                        published=publish)
-            post.save()
-            postuser = PostUser(post=post, user=current_user.id)
-            postuser.save()
-
-            for tag_name in tags:
-                tag, _ = Tag.get_or_create(name=tag_name)
-                posttag, _ = PostTag.get_or_create(post=post, tag=tag)
-
-
-            if publish:
-                flash("Post published!", "success")
-            elif not publish:
-                flash("Post saved as draft!", "success")
-
-        except peewee.IntegrityError:
-            abort(404)
+        flash("Empty post", "danger")
 
     return redirect(url_for('admin_post_list'))
 
@@ -520,10 +529,11 @@ def admin_post_list():
 def admin_post_delete():
     status = {'ok': True}
 
-    if 'id' not in request.form:
+    data = request.get_json()
+    if 'id' not in data:
         abort(400)
 
-    id_to_delete = request.form.get('id', None)
+    id_to_delete = data["id"]
 
     if id_to_delete:
         try:
@@ -562,6 +572,9 @@ def admin_tag_list():
         .join(Post, peewee.JOIN.LEFT_OUTER) \
         .group_by(Tag) \
         .limit(20)
+    tags_with_post_counts = sorted(tags_with_post_counts,
+           key=lambda tags_with_post_counts: tags_with_post_counts.updated_at,
+           reverse=True)
     return render_template('tag_list.html', tags=tags_with_post_counts)
 
 
@@ -570,8 +583,7 @@ def admin_tag_list():
 @admin_required
 def admin_tag_create():
     all_tags = Tag.select()
-    return render_template('tag_edit.html', editing=False, tags=False, all_tags = Tag.select()
-)
+    return render_template('tag_edit.html', editing=False, tags=False, all_tags = all_tags)
 
 
 @app.route('/admin/tags/edit/<uid>')
@@ -580,9 +592,10 @@ def admin_tag_create():
 def admin_tag_edit(uid):
     try:
         tag_to_edit = Tag.get(Tag.id == uid)
+        all_tags = Tag.select().where(Tag.id != tag_to_edit.id)
     except Tag.DoesNotExist:
         abort(404)
-    return render_template('tag_edit.html', editing=True, tag_to_edit=tag_to_edit, all_tags = Tag.select().where(Tag.id != tag_to_edit.id  ) )
+    return render_template('tag_edit.html', editing=True, tag_to_edit=tag_to_edit, all_tags = all_tags )
 
 
 @app.route('/admin/tags/save', methods=["POST"])
@@ -590,40 +603,38 @@ def admin_tag_edit(uid):
 @admin_required
 def admin_tag_save():
 
-    tags_json = json.loads(request.form.get('tags'))
+    tags = request.form.get('tags')
     edit_id = request.form.get('tag-edit-id')
 
-    if edit_id:
-        try:
-            tags = [tag_json["value"] for tag_json in tags_json]
-            tag_to_edit = Tag.get(Tag.id == edit_id)
-            tag_to_edit.name = tags[0]
-            tag_to_edit.save()
-            flash("Tag edited", "success")
+    tags = [tag_json["value"] for tag_json in json.loads(tags)] if tags else None
+    if tags:
+        if edit_id:
+            try:
+                tag_to_edit = Tag.get(Tag.id == edit_id)
+                tag_to_edit.name = tags[0]
+                tag_to_edit.save()
+                flash("Tag edited", "success")
 
-        except Tag.DoesNotExist:
-            abort(404)
+            except Tag.DoesNotExist:
+                abort(404)
 
+        else:
+            successes = []
+            for tag in tags:
+                t, created = Tag.get_or_create(name=tag)
+                successes.append(created)
+
+            if successes.count(True) == 1:
+                flash("Tag \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
+            elif successes.count(True) > 1:
+                flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
+
+            if successes.count(False) == 1:
+                flash("Tag \"" + ", ".join( [tag for tag, success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
+            elif successes.count(False) > 1:
+                flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
     else:
-        tags = [tag_json["value"] for tag_json in tags_json]
-
-        successes = []
-        for tag in tags:
-            t, created = Tag.get_or_create(name=tag)
-            successes.append(created)
-
-
-
-        if successes.count(True) == 1:
-            flash("Tag \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
-        elif successes.count(True) > 1:
-            flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == True ] ) + "\" created!", "success")
-
-        if successes.count(False) == 1:
-            flash("Tag \"" + ", ".join( [tag for tag, success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
-        elif successes.count(False) > 1:
-            flash("Tags \"" + ", ".join( [tag for tag,success in zip(tags, successes) if success == False ]) + "\" already existed!", "danger")
-
+        flash("No tag names", "danger")
     return redirect(url_for('admin_tag_list'))
 
 
@@ -633,10 +644,11 @@ def admin_tag_save():
 def admin_tag_delete():
     status = {'ok': True}
 
-    if 'id' not in request.form:
+    data = request.get_json()
+    if 'id' not in data:
         abort(400)
 
-    id_to_delete = request.form.get('id', None)
+    id_to_delete = data["id"]
 
     if id_to_delete:
         try:
@@ -669,9 +681,12 @@ def admin_user_list():
 @login_required
 @admin_required
 def admin_user_create():
-    return render_template('user_edit.html', editing=False, )
+    return render_template('user_edit.html', editing=False, selfediting=False)
 
 
+@app.route('/admin/users/edit/<uid>')
+@login_required
+@admin_required
 def user_edit(uid):
     try:
         user_to_edit = User.get(User.id == uid)
@@ -682,13 +697,6 @@ def user_edit(uid):
         return render_template('user_edit.html', editing=True, user=user_to_edit, selfediting=True)
     else:
         return render_template('user_edit.html', editing=True, user=user_to_edit, selfediting=False)
-
-
-@app.route('/admin/users/edit/<uid>')
-@login_required
-@admin_required
-def admin_user_edit(uid):
-    return user_edit(uid)
 
 
 @app.route('/profile')
@@ -704,27 +712,31 @@ def user_save():
     is_admin = request.form.get('user-is-admin') == 'on'
     edit_id = request.form.get('user-edit-id')
 
-    if edit_id:
-        try:
-            user_to_edit = User.get(User.id == edit_id)
+    if username and password:
+        if edit_id:
+            try:
+                user_to_edit = User.get(User.id == edit_id)
+
+                hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+                user_to_edit.name = username
+                user_to_edit.password = hashed_pw
+                user_to_edit.admin = is_admin
+
+                user_to_edit.save()
+                flash("User edited", "success")
+            except User.DoesNotExist:
+                abort(404)
+
+        else:
 
             hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-            user_to_edit.name = username
-            user_to_edit.password = hashed_pw
-            user_to_edit.admin = is_admin
-
-            user_to_edit.save()
-            flash("User edited", "success")
-        except User.DoesNotExist:
-            abort(404)
+            User.create(name=username, password=hashed_pw, admin=is_admin)
+            flash("User created!", "success")
 
     else:
+        flash("Can't create user without name and password", "danger")
 
-        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-        User.create(name=username, password=hashed_pw, admin=is_admin)
-        flash("User created!", "success")
-
-    if is_admin:
+    if current_user.admin:
         return redirect(url_for('admin_user_list'))
     else:
         return redirect(url_for('blog'))
@@ -751,14 +763,11 @@ def profile_user_save():
         abort(400)
 
 
-def user_delete():
+def user_delete(uid):
+
     status = {'ok': True}
 
-    if 'id' not in request.form:
-        abort(400)
-
-    id_to_delete = request.form.get('id', None)  # request returns strings, not ints!
-
+    id_to_delete = uid
     if id_to_delete:
         try:
             user_to_delete = User.get(User.id == id_to_delete)
@@ -777,15 +786,31 @@ def user_delete():
 
     return json.dumps(status)
 
+@app.route('/profile/delete', methods=["POST"])
+@login_required
+def profile_user_delete():
+
+    data = request.get_json()
+    if 'id' not in data:
+        abort(400)
+    id_to_delete = data["id"]
+
+    if id_to_delete == current_user.id:
+        return user_delete(id_to_delete)
+    elif id_to_delete != current_user.id:
+        flash("You only can delete yourself!")
+        abort(400)
+
 
 @app.route('/admin/users/delete', methods=["POST"])
 @login_required
 @admin_required
 def admin_user_delete():
-    if 'id' not in request.form:
-        abort(400)
 
-    id_to_delete = int(request.form.get('id', None))  # request returns strings, not ints!
+    data = request.get_json()
+    if 'id' not in data:
+        abort(400)
+    id_to_delete = data["id"]
 
     if id_to_delete == current_user.id:
         status = {'ok': False}
@@ -796,21 +821,7 @@ def admin_user_delete():
         return json.dumps(status)
 
     elif id_to_delete != current_user.id:
-        return user_delete()
-
-
-@app.route('/profile/delete', methods=["POST"])
-@login_required
-def profile_user_delete():
-    if 'id' not in request.form:
-        abort(400)
-
-    id_to_delete = int(request.form.get('id', None))  # request returns strings, not ints!
-
-    if id_to_delete == current_user.id:
-        return user_delete()
-    elif id_to_delete != current_user.id:
-        abort(400)
+        return user_delete(id_to_delete)
 
 
 @app.route('/admin/settings')
@@ -834,8 +845,8 @@ def admin_settings_save():
         current_settings.icon_2_link = request.form.get('icon-2-link')
         current_settings.icon_2_icon_type = request.form.get('icon-2-icon-type')
         current_settings.posts_per_page = request.form.get('posts-per-page')
-        current_settings.number_of_recent_posts = request.form.get('number-of-recent-posts')
         current_settings.max_synopsis_chars = request.form.get('max-synopsis-chars')
+        current_settings.table_entries_per_page = request.form.get('table-entries-per-page')
         current_settings.save()
 
         flash("Settings updated.", "success")
@@ -847,8 +858,13 @@ def admin_settings_save():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    notice = """Nothing to see here"""
-    return render_template('404.html', notice=notice), 404
+    notice = """Nothing to see here!"""
+    return render_template('40x.html', notice=notice), 404
+
+@app.errorhandler(400)
+def bad_request(e):
+    notice = """Bad request. Nothing to see here!"""
+    return render_template('40x.html', notice=notice), 400
 
 @app.errorhandler(DatabaseError)
 def special_exception_handler(error):

@@ -2,7 +2,14 @@
 {% set height_is_view_port = True %}
 
 
-{% block title %}User List{% endblock %}
+{% block title %}
+  User List
+{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
+{% endblock %}
 
 {% block sidebar %}
 <div class="content">
@@ -35,7 +42,7 @@
             <span class="panel-icon">
                 <i class="fa fa-sticky-note-o"></i>
             </span>
-            Show Postsb
+            Show Posts
         </a>
 
     </div>
@@ -48,28 +55,28 @@
      <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
           <thead>
               <tr>
-                  <th class="sort" data-sort="user_id">ID</th>
-                  <th class="sort" data-sort="user_name">Name</th>
-                  <th class="sort" data-sort="user_post_count">Number of posts</th>
-                  <th class="sort" data-sort="user_role">Role</th>
-                  <th class="sort" data-sort="post_date_created">Created</th>
+                  <th class="sort" data-sort="user-id">ID</th>
+                  <th class="sort" data-sort="user-name">Name</th>
+                  <th class="sort" data-sort="user-post-count">Number of posts</th>
+                  <th class="sort" data-sort="user-role">Role</th>
+                  <th class="sort" data-sort="user-date-created">Created</th>
               </tr>
           </thead>
           <tbody class="list" >
               {% for user in users_with_post_counts %}
-              <tr class="user-row"z>
-                  <td class="user_id user-id" data-id="{{ user.id }}">
+              <tr class="user-row">
+                  <td class="user-id" data-id="{{ user.id }}">
                     {{ user.id }}
                   </td>
-                  <td class="user_name" data-name="{{ user.name }}">
+                  <td class="user-name" data-name="{{ user.name }}">
                     <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name }}</a>
                   </td>
-                  <td class="user_post_count" data-count="{{ user.count }}">
+                  <td class="user-post-count" data-count="{{ user.count }}">
                     <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.count}}</a>
-                  <td class="user_role" data-role="{% if user.admin%}Admin{% elif not user.admin %}None{% endif %}">
+                  <td class="user-role" data-role="{% if user.admin%}Admin{% elif not user.admin %}None{% endif %}">
                     <span>{% if user.admin%}Admin{% elif not user.admin %}None{% endif %}</span>
                   </td>
-                  <td class="user_date_created" data-created="{{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                  <td class="user-date-created" data-created="{{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
               </tr>
@@ -85,7 +92,7 @@
     <div class="level-left">
       <div class="level-item" style="margin-top:12px;">
         <div class="control has-icons-left" id="">
-            <input class="input is-small" id="user-search-field" size="20" type="text" placeholder="Search User">
+            <input class="input is-small" id="list-search-field" size="20" type="text" placeholder="Search User">
             <span class="icon is-small is-left">
               <i class="fa fa-search"></i>
             </span>
@@ -101,114 +108,29 @@
     </div>
   </nav>
  </div>
-
-
-
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
-$(function() {
-    var activeRow = null;
-    var activeRowId = null;
-
-    $(".user-row").click(function(e) {
-        var row = $(this);
-
-        if (activeRow)
-            activeRow.removeClass("table-row-active");
-
-        row.addClass("table-row-active");
-        var id = row.find(".user-id").html();
-
-        activeRow = row;
-        activeRowId = id;
-    });
-
-    $("#action-delete-user").click(function(e) {
-        if(activeRowId)
-        {
-            if(confirm("Are you sure you want to delete user " + activeRowId + "?"))
-            {
-                $.post("{{ url_for('admin_user_delete') }}", { id: activeRowId }).done(function(e) {
-                  if(JSON.parse(e)["ok"] === true) {
-                    activeRow.remove();
-                  }
-                  else
-                  {
-                    location.reload();
-                  }
-                });
-            }
-        }
-        else
-        {
-            alert("Select a user to delete.");
-        }
-    });
-
-    $("#action-edit-user").click(function(e) {
-        if(activeRowId)
-        {
-            window.location = "/admin/users/edit/ " + activeRowId;
-        }
-        else
-        {
-            alert("Select a user to edit");
-        }
-    });
-
-    $("#action-show-post-of-user").click(function(e) {
-        if(activeRowId)
-        {
-                var userName = row.find(".user_name").html();
-
-                window.location = "/user/" + userName  ;
-        }
-        else
-        {
-            alert("Select a user to choose");
-        }
-    });
-});
-</script>
-
-
 <!-- Fancy table functions via list_with_bulma.js. Unfortunately we have to tinker a bit with the pagination classes :/ -->
 <script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
 <script type="text/javascript">
-$(function() {
-  var options = {
+  var table_entries_per_page = {{settings.table_entries_per_page}};
+  var listType = "user";
+  var optionsList = {
     valueNames: [
-      { name: 'user_id', attr: 'data-id'},
-      { name: 'user_name', attr: 'data-name'},
-      { name: 'user_count', attr: 'data-count'},
-      { name: 'user_role', attr: 'data-role'},
-      { name: 'user_date_created', attr: 'data-created'}],
-    page: 14,
+      { name: 'user-id', attr: 'data-id'},
+      { name: 'user-name', attr: 'data-name'},
+      { name: 'user-count', attr: 'data-count'},
+      { name: 'user-role', attr: 'data-role'},
+      { name: 'user-date-created', attr: 'data-created'}],
+    page: table_entries_per_page, // table_entries_per_page is set external as global
     pagination: [{
       paginationClass: 'pagination-list',
       innerWindow: 5,
       outerWindow: 1
     }]
-
   };
-
-  // Init list
-  var userList = new List('users', options);
-  var paginationList = document.getElementsByClassName("pagination")[0];
-  var paginationLinks = paginationList.children;
-  if (userList.matchingItems.length < userList.page) {
-    paginationList.classList.add('is-invisible');
-  }
-
-  $('#user-search-field').keyup(function() {
-   var searchString = $(this).val();
-   userList.search(searchString);
-  });
-});
-
-
-
+var List = new List(listType+'s', optionsList);
 </script>
+<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
 {% endblock %}

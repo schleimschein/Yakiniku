@@ -41,105 +41,28 @@
 <html lang="en has-navbar-fixed-top">
 <head>
     <meta charset="UTF-8">
-    <title>{{ settings.blog_title }} :: {% block title %} UNDEFINED {%endblock %}</title>
+    <title>{{ settings.blog_title }} :: {% block title %} {{ settings.blog_title }} {%endblock %}</title>
 
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
 
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" media="all">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" media="all">
+
+
 
     {% block head %}
     {% endblock %}
 </head>
 
-<body style="{% if not height_is_view_port %}min-height: 100vh;{% else %}height: 100vh;{% endif %}">
-    <nav class="navbar is-fixed-top" role="navigation" aria-label="main-navigation">
-
-            <div class="navbar-brand">
-                <a class="navbar-item" href="{{url_for('index')}}">
-                    <span class="logo-text">{{ settings.blog_title }} ::</span>
-                </a>
-
-                <button class="button navbar-burger" data-target="navMenu">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </button>
-            </div>
-
-            <div class="navbar-menu" id="navMenu">
-
-              {% if current_user.admin %}
-                <div class="navbar-start">
-                  <a class="navbar-item is-tab{% if (request.path == url_for('admin_post_list') or request.path == url_for('admin_main')) %} is-active {% endif %}" href="{{ url_for('admin_post_list') }}">
-                      Posts
-                  </a>
-                  <a class="navbar-item is-tab{% if request.path == url_for('admin_tag_list') %} is-active {% endif %}" href="{{ url_for('admin_tag_list') }}">
-                      Tags
-                  </a>
-
-                  <a class="navbar-item is-tab{% if request.path == url_for('admin_user_list') %} is-active {% endif %}" href="{{ url_for('admin_user_list') }}">
-                      Users
-                  </a>
-                  <a class="navbar-item is-tab{% if request.path == url_for('admin_settings') %} is-active {% endif %}" href="{{ url_for('admin_settings') }}">
-                      Settings
-                  </a>
-                </div>
-              {% endif %}
-
-              <!--
-              <div class="navbar-center nav-menu has-text-left">
-                  <h1 class="title is-5">{{ self.title() }}</h1>
-              </div>
-              -->
-
-              <div class="navbar-end">
-
-                  <a class="navbar-item {% if request.path == settings.icon_1_link %} is-active {% endif %}" href="{{settings.icon_1_link}}">
-                      <i class="fa fa-{{settings.icon_1_icon_type}}"></i>
-                  </a>
-                  <a class="navbar-item {% if request.path == settings.icon_2_link %} is-active {% endif %}" href="{{settings.icon_2_link}}">
-                      <i class="fa fa-{{settings.icon_2_icon_type}}"></i>
-                  </a>
-                  <div class="navbar-item">
-                    <form action="{{ url_for('search') }}" method="POST" name="search" id="navbar_search_form">
-                      <div class="control has-icons-left" id="navbar_search_control">
-                        <a class="icon is-left" id="navbar_search_icon" href="{{ url_for('search') }}">
-                          <i class="fa fa-search"></i>
-                        </a>
-                        <input class="input is-rounded" id="navbar_search_input" type="search" name="navbar-search-input">
-                      </div>
-                    </form>
-                  </div>
-
-              </div>
+<body class="{% if not height_is_view_port %}height-is-at-least-viewport{% else %}height-is-viewport{% endif %}">
 
 
-              {% if current_user.is_authenticated %}
-                <div class="navbar-item has-dropdown is-hoverable">
-                  <a class="navbar-link">
-                    {{ current_user.name }}
-                  </a>
-
-                  <div class="navbar-dropdown is-boxed">
-                    <a class="navbar-item" href="{{ url_for('profile_user_edit') }}">
-                      Profile
-                    </a>
-                    <a class="navbar-item" href="{{ url_for('logout') }}">
-                      Logout
-                    </a>
-                        <!-- <i class="fa fa-caret-down"></i> -->
-                  </div>
-                </div>
-              {% endif %}
-            </div>
-        </nav>
+    {% include 'navbar.html' %}
 
 
     <section class="section main-section">
@@ -172,116 +95,27 @@
             </div>
     </section>
 
-    <footer class="footer_not_bulma">
+    <footer class="footer-not-bulma">
       <div class="content has-text-right">
             &copy; 2018 Vegeta
       </div>
     </footer>
-    <!-- Bulma hasn't yet implemented a sticky footer feature. So you have to muddle your own :) -->
 
-
-
-    <script src="{{ url_for('static', filename='js/jquery-3.1.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/simplemde.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
 
+    <script src="{{ url_for('static', filename='js/delete.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/navbar-burger.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navbar-search.js') }}"></script>
+
+
+
     <script type="text/javascript">
-
-      $(function() {
-        var deleteContainers  = document.getElementsByClassName('has-delete');
-
-        for(var i = 0; i < deleteContainers.length; i++)
-        {
-            var deleteContainer = deleteContainers[i];
-            var deletes = deleteContainer.getElementsByClassName('delete');
-
-            for(var i = 0; i < deletes.length; i++)
-            {
-              var dlt = deletes[i];
-
-              dlt.onclick = function()
-              {
-                  deleteContainer.remove();
-              }
-            }
-        }
-
-
-        var searchForm = document.getElementById('navbar_search_form');
-        var searchControl = document.getElementById('navbar_search_control');
-        var searchInput = document.getElementById('navbar_search_input');
-        var searchIcon = document.getElementById('navbar_search_icon');
-
-        searchInput.onkeyup = function(e)
-        {
-          if(searchInput.value.trim() !== "")
-          {
-            searchIcon.style.pointerEvents = "auto";
-          }
-            else if(searchInput.value.trim() === "")
-          {
-            searchIcon.style.pointerEvents = "none";
-          }
-
-          if (e.keyCode == 27)
-          {//27 is the code for escape
-            searchInput.blur();
-          }
-        };
-
-        searchInput.onblur = function(e)
-        {
-          if( (e.relatedTarget === searchIcon) && searchInput.value.trim() !== "")
-          {
-            searchForm.submit();
-          }
-          else {
-            searchIcon.style.pointerEvents = "none";
-          }
-        };
-
-          searchInput.onfocus = function(e)
-        {
-          if( searchInput.value.trim() !== "")
-          {
-            searchIcon.style.pointerEvents = "auto";
-          }
-        };
-
-
-        $(".highlight").each(function(i, block)
-        {
-            hljs.highlightBlock(block);
-        });
-
-
-      });
-
-
-      document.addEventListener('DOMContentLoaded', function () {
-        // Get all "navbar-burger" elements
-        var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
-
-        // Check if there are any navbar burgers
-        if ($navbarBurgers.length > 0) {
-
-          // Add a click event on each of them
-          $navbarBurgers.forEach(function ($el) {
-            $el.addEventListener('click', function () {
-
-              // Get the target from the "data-target" attribute
-              var target = $el.dataset.target;
-              var $target = document.getElementById(target);
-
-              // Toggle the class on both the "navbar-burger" and the "navbar-menu"
-              $el.classList.toggle('is-active');
-              $target.classList.toggle('is-active');
-
-            });
-          });
-        }
-
-      });
+      var highlightElems = document.getElementsByClassName("highlight");
+      for (var i = 0, len = highlightElems.length; i < len; i++) {
+      hljs.highlightBlock(highlightElems[i]);
+      }
     </script>
 
     {% block javascript %}

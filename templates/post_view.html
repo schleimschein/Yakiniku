@@ -3,10 +3,7 @@
 {% block title %}View{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-tagsinput.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/awesomplete.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="all">
 {% endblock %}
 
 {% if post.published %}
@@ -43,7 +40,7 @@
 
   {% else %}
 
-    <div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
+    <div class="container" id="nothing-to-see">
       <div class="content has-text-centered">
             <h1 class="title">Nothing to see here</h1>
       </div>

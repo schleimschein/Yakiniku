@@ -2,7 +2,14 @@
 {% set height_is_view_port = True %}
 
 
-{% block title %}Tag List{% endblock %}
+{% block title %}
+  Tag List
+{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
+{% endblock %}
 
 {% block sidebar %}
 <div class="content">
@@ -48,24 +55,24 @@
      <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
           <thead>
               <tr>
-                  <th class="sort" data-sort="tag_id">ID</th>
-                  <th class="sort" data-sort="tag_name">Tag</th>
-                  <th class="sort" data-sort="tag_posts_number">Nr. of posts</th>
-                  <th class="sort" data-sort="post_date_created">Updated</th>
+                  <th class="sort" data-sort="tag-id">ID</th>
+                  <th class="sort" data-sort="tag-name">Tag</th>
+                  <th class="sort" data-sort="tag-posts-number">Nr. of posts</th>
+                  <th class="sort" data-sort="tag-date-created">Created</th>
               </tr>
           </thead>
           <tbody class="list" >
               {% for tag in tags %}
-              <tr class="post-row"z>
-                  <td class="tag_id tag-id" data-id="{{ tag.id }}">
+              <tr class="tag-row">
+                  <td class="tag-id" data-id="{{ tag.id }}">
                     {{ tag.id }}
                   </td>
-                  <td class="tag_name" data-name="{{ tag.name }}">
+                  <td class="tag-name" data-name="{{ tag.name }}">
                     {{ tag.name}}
                   </td>
-                  <td class="tag_posts_number" data-counts="{{ tag.count}}">
+                  <td class="tag-posts-number" data-counts="{{ tag.count}}">
                     <a href="{{ url_for('tag_view', tag_name=tag.count) }}">{{tag.count}}</a>
-                  <td class="tag_date_created" data-created="{{ tag.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                  <td class="tag-date-created" data-created="{{ tag.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ tag.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
               </tr>
@@ -81,7 +88,7 @@
     <div class="level-left">
       <div class="level-item" style="margin-top:12px;">
         <div class="control has-icons-left" id="">
-            <input class="input is-small" id="tag-search-field" size="20" type="text" placeholder="Search Tag">
+            <input class="input is-small" id="list-search-field" size="20" type="text" placeholder="Search Tag">
             <span class="icon is-small is-left">
               <i class="fa fa-search"></i>
             </span>
@@ -101,109 +108,24 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
-$(function() {
-    var activeRow = null;
-    var activeRowId = null;
-
-    $(".tag-row").click(function(e) {
-        var row = $(this);
-
-        if (activeRow)
-            activeRow.removeClass("tag-row-active")
-
-        row.addClass("tag-row-active");
-        id = row.find(".tag-id").html();
-        tagName = row.find(".tag-name").html();
-        activeRow = row;
-        activeRowId = id;
-    });
-
-    $("#action-delete-tag").click(function(e) {
-        if(activeRowId)
-        {
-            if(confirm("Are you sure you want to delete tag " + activeRowId + "?"))
-            {
-                $.post("{{ url_for('admin_tag_delete') }}", { id: activeRowId }).done(function(e) {
-                  if(JSON.parse(e)["ok"] === true) {
-                    activeRow.remove();
-                  }
-                  else
-                  {
-                    location.reload();
-                  }
-                });
-            }
-        }
-        else
-        {
-            alert("Select a tag to delete.");
-        }
-    });
-
-    $("#action-edit-tag").click(function(e) {
-        if(activeRowId)
-        {
-                window.location = "/admin/tags/edit/ " + activeRowId;
-        }
-        else
-        {
-            alert("Select a tag to edit");
-        }
-    });
-
-    $("#action-show-post-of-tag").click(function(e) {
-        if(activeRowId)
-        {
-
-                window.location = "/tag/" + tagName ;
-        }
-        else
-        {
-            alert("Select a tag to choose");
-        }
-    });
-
-
-});
-</script>
-
 <script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
 <script type="text/javascript">
-$(function() {
-  var options = {
-    valueNames: [
-      { name: 'tag_id', attr: 'data-id'},
-      { name: 'tag_name', attr: 'data-name' },
-      { name: 'tag_posts_number', attr: 'data-counts' },
-      { name: 'post_date_created', attr: 'data-created'}],
-    page: 14,
-    pagination: [{
-      paginationClass: 'pagination-list',
-      innerWindow: 5,
-      outerWindow: 1
-    }]
-
-  };
-
-  // Init list
-  var tagList = new List('tags', options);
-  var paginationList = document.getElementsByClassName("pagination")[0];
-  var paginationLinks = paginationList.children;
-  if (tagList.matchingItems.length < tagList.page) {
-    paginationList.classList.add('is-invisible');
-  }
-
-  $('#tag-search-field').keyup(function() {
-   var searchString = $(this).val();
-   tagList.search(searchString);
-});
-
-
-});
-
-
-
+var table_entries_per_page = {{settings.table_entries_per_page}};
+var listType = "tag";
+var optionsList = {
+  valueNames: [
+    { name: 'tag-id', attr: 'data-id'},
+    { name: 'tag-name', attr: 'data-name' },
+    { name: 'tag-posts-number', attr: 'data-counts' },
+    { name: 'tag-date-created', attr: 'data-created'}],
+  page: table_entries_per_page,
+  pagination: [{
+    paginationClass: 'pagination-list',
+    innerWindow: 5,
+    outerWindow: 1
+  }]
+};
+var List = new List(listType+'s', optionsList);
 </script>
-
+<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
 {% endblock %}

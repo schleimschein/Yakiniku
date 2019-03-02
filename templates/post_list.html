@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 {% set height_is_view_port = True %}
 
+{% block title %}
+  Post List
+{% endblock %}
 
-{% block title %}Post List{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
+{% endblock %}
 
 {% block sidebar %}
 <div class="content">
@@ -31,24 +37,6 @@
             </span>
             Edit Post
         </a>
-      <!--
-        <a class="panel-block" href="javascript:void(0);" id="action-search-post">
-          <span>
-            <span class="panel-icon" id="post_search_icon">
-              <i class="fa fa-search" aria-hidden="true"></i>
-            </span>
-            <span>
-              Search Post
-            </span>
-          </span>
-       -->
-          <!-- <break style="flex-basis: 100%;width: 0px; height: 0px; overflow: hidden;"></break> -->
-        <!--  <div class="control" id="post_search_control">
-            <input class="input is-small" id="post_search_input" size="1" type="text" placeholder="Search Post">
-          </div>
-         -->
-
-        </a>
     </div>
 </div>
 {% endblock %}
@@ -59,43 +47,43 @@
      <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
           <thead>
               <tr>
-                  <th class="sort" data-sort="post_id">ID</th>
-                  <th class="sort" data-sort="post_title">Title</th>
-                  <th class="sort" data-sort="post_tags">Tags</th>
-                  <th class="sort" data-sort="post_published">Publ.</th>
-                  <th class="sort" data-sort="post_user">User</th>
-                  <th class="sort" data-sort="post_date_posted">Posted</th>
-                  <th class="sort" data-sort="post_date_updated">Updated</th>
+                  <th class="sort" data-sort="post-id">ID</th>
+                  <th class="sort" data-sort="post-title">Title</th>
+                  <th class="sort" data-sort="post-tags">Tags</th>
+                  <th class="sort" data-sort="post-published">Publ.</th>
+                  <th class="sort" data-sort="post-user">User</th>
+                  <th class="sort" data-sort="post-date_posted">Posted</th>
+                  <th class="sort" data-sort="post-date_updated">Updated</th>
               </tr>
           </thead>
           <tbody class="list" >
               {% for post,user,tags in posts_with_user_and_tags %}
-              <tr class="post-row"z>
-                  <td class="post_id post-id" data-id="{{ post.id }}">
+              <tr class="post-row">
+                  <td class="post-id" data-id="{{ post.id }}">
                     {{ post.id }}
                   </td>
-                  <td class="post_title" data-title="{{ post.title }}">
+                  <td class="post-title" data-title="{{ post.title }}">
                     <a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a>
                   </td>
                   {% set comma = joiner(",") %}
-                  <td class="post_tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
+                  <td class="post-tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
                   {% for tag in tags %}
                     <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
                   {% endfor %}
-                  <td class="post_published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
+                  <td class="post-published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
                     <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span>
                   </td>
-                  <td class="post_user" data-user="{% if user %}{{ user.name }}{% endif %}">
+                  <td class="post-user" data-user="{% if user %}{{ user.name }}{% endif %}">
                   {% if user %}
                     <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a>
                   {% elif not user %}
                     Deleted
                   {% endif %}
                   </td>
-                  <td class="post_date_posted" data-posted="{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                  <td class="post-date-posted" data-posted="{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
-                  <td class="post_date_updated" data-updated="{{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                  <td class="post-date-updated" data-updated="{{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
                     {{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
                   </td>
               </tr>
@@ -111,7 +99,7 @@
     <div class="level-left">
       <div class="level-item" style="margin-top:12px;">
         <div class="control has-icons-left" id="">
-            <input class="input is-small" id="post-search-field" size="20" type="text" placeholder="Search Post">
+            <input class="input is-small" id="list-search-field" size="20" type="text" placeholder="Search Post">
             <span class="icon is-small is-left">
               <i class="fa fa-search"></i>
             </span>
@@ -131,105 +119,28 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/javascript">
-$(function() {
-    var activeRow = null;
-    var activeRowId = null;
-
-    $(".post-row").click(function(e) {
-        var row = $(this);
-
-        if (activeRow)
-            activeRow.removeClass("post-row-active");
-
-        row.addClass("post-row-active");
-        id = row.find(".post-id").html();
-        activeRow = row;
-        activeRowId = id;
-    });
-
-    $("#action-delete-post").click(function(e) {
-
-        if(activeRowId)
-        {
-            if(confirm("Are you sure you want to delete post " + activeRowId + "?"))
-            {
-                $.post("{{ url_for('admin_post_delete') }}", { id: activeRowId }).done(function(e) {
-                  if(JSON.parse(e)["ok"] === true) {
-                    activeRow.remove();
-                  }
-                  else
-                  {
-                    location.reload();
-                  }
-                });
-            }
-        }
-        else
-        {
-            alert("Select a post to delete.");
-        }
-    });
-
-    $("#action-edit-post").click(function(e) {
-        if(activeRowId)
-        {
-            window.location = "/admin/posts/edit/" + activeRowId;
-        }
-        else
-        {
-            alert("Select a post to edit!");
-        }
-    });
-
-    /*$("#action-search-post").one("click", function(e) {
-        e.preventDefault();
-        this.classList.toggle("expanded");
-        document.getElementById('post_search_control').classList.toggle("expanded");
-        document.getElementById('post_search_input').focus();
-
-    });*/
-
-    });
-</script>
-
 <!-- Fancy table functions via list_with_bulma.js. Unfortunately we have to tinker a bit with the pagination classes :/ -->
 <script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
 <script type="text/javascript">
-$(function() {
-  var options = {
-    valueNames: [
-      { name: 'post_id', attr: 'data-id'},
-      { name: 'post_title', attr: 'data-title'},
-      { name: 'post_tags', attr: 'data-tags'},
-      { name: 'post_published', attr: 'data-published'},
-      { name: 'post_user', attr: 'data-user'},
-      { name: 'post_date_posted', attr: 'data-posted'},
-      { name: 'post_date_updated', attr: 'data-updated'}],
-    page: 14,
-    pagination: [{
-      paginationClass: 'pagination-list',
-      innerWindow: 5,
-      outerWindow: 1
-    }]
-
-  };
-
-  // Init list
-  var postList = new List('posts', options);
-  var paginationList = document.getElementsByClassName("pagination")[0];
-  var paginationLinks = paginationList.children;
-  if (postList.matchingItems.length < postList.page) {
-    paginationList.classList.add('is-invisible');
-  }
-
-  $('#post-search-field').keyup(function() {
-   var searchString = $(this).val();
-   postList.search(searchString);
-  });
-});
-
+var table_entries_per_page = {{settings.table_entries_per_page}};
+var listType = "post";
+var optionsList = {
+  valueNames: [
+    { name: 'post-id', attr: 'data-id'},
+    { name: 'post-title', attr: 'data-title'},
+    { name: 'post-tags', attr: 'data-tags'},
+    { name: 'post-published', attr: 'data-published'},
+    { name: 'post-user', attr: 'data-user'},
+    { name: 'post-date-posted', attr: 'data-posted'},
+    { name: 'post-date-updated', attr: 'data-updated'}],
+  page: table_entries_per_page, // table_entries_per_page is set external as global
+  pagination: [{
+    paginationClass: 'pagination-list',
+    innerWindow: 5,
+    outerWindow: 1
+  }]
+};
+var List = new List(listType+'s', optionsList);
 </script>
-
-
+<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
 {% endblock %}

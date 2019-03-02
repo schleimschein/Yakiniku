@@ -1,35 +1,33 @@
 {% extends "base.html" %}
 {% set comma = joiner(",") %}
 
-{% block title %} New Post {% endblock %}
-
-{% block head %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
-
-
-
+{% block title %}
+  New Post
 {% endblock %}
 
-  {% block sidebar %}
-    {%  if editing == True %}
-  <div class="content">
-      <div class="panel">
-          <div class="panel-heading">
-              Options
-          </div>
-          <a class="panel-block" href="#delete">
-              <span class="panel-icon">
-                  <i class="fa fa-times"></i>
-              </span>
-              Delete This Tag
-          </a>
-      </div>
-  </div>
-    {% endif %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
+{% endblock %}
+
+{%  if editing == True %}
+  {% block sidebar %}
+    <div class="content">
+        <div class="panel">
+            <div class="panel-heading">
+                Options
+            </div>
+            <a class="panel-block" id="action-delete-tag" href="javascript:void(0);">
+                <span class="panel-icon">
+                    <i class="fa fa-times"></i>
+                </span>
+                Delete This Tag
+            </a>
+        </div>
+    </div>
   {% endblock %}
+{% endif %}
 
 {% block body %}
     <div class="content">
@@ -72,24 +70,28 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
-
-<script type="text/javascript">
-
-  var input = document.querySelector('input[id=input_tagify]');
-  var all_tags = document.getElementById("all-tags").getAttribute("all-tags");
-  var tagify = new Tagify(input, {
-    {% if editing %}
-      maxTags: 1,
-    {% endif %}
-    whitelist: all_tags.split(','),
-    blacklist: all_tags.split(','),
-    autocomplete: false,
-    delimiters: ["," , " "],
-    tagTemplate: function template(v, tagData) {
-      return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";
-    }
-  });
-
+  <script src="{{ url_for('static', filename='js/tagify.js') }}"></script>
+  <script type="text/javascript">
+    var input = document.querySelector('input[id=input_tagify]');
+    var all_tags = document.getElementById("all-tags").getAttribute("all-tags");
+    var optionsTagify = {
+      {% if editing %}
+        maxTags: 1,
+      {% endif %}
+      whitelist: all_tags.split(','),
+      blacklist: all_tags.split(','),
+      autocomplete: false,
+      delimiters: ["," , " "],
+      tagTemplate: function template(v, tagData) {
+        return "<tag title='" + v + "' contenteditable='false' spellcheck=\"false\">\n                            <div><span class='tagify__tag-text'>" + v + "</span></div><x class='delete is-small' title=''></x>\n                        </tag>";
+      }
+    };
+    var Tagify=new Tagify(input,optionsTagify);
   </script>
+
+  <script type="text/javascript">
+  var editType = "tag";
+  </script>
+  <script src="{{ url_for('static', filename='js/edit_interaction.js') }}"></script>
+
 {% endblock %}

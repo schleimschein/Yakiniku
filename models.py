@@ -89,8 +89,6 @@ class PostTag(Model):
         )
 
 
-
-
 class Settings(Model):
 
     blog_title = TextField()
@@ -102,8 +100,9 @@ class Settings(Model):
     icon_2_icon_type = TextField()
 
     posts_per_page = IntegerField()
-    number_of_recent_posts = IntegerField()
     max_synopsis_chars = IntegerField()
+
+    table_entries_per_page = TextField()
 
     class Meta:
         database = postgres_db

@@ -62,31 +62,11 @@
     </div>
 {% endblock %}
 
-
 {% block javascript %}
-  {% if editing  %}
-<script type="text/javascript">
-$(function() {
-
-  $("#action-delete-user").click(function(e) {
-              if(confirm("Are you sure you want to delete this user ?"))
-              {
-                  $.post("{% if selfediting %} {{ url_for('profile_user_delete') }} {% elif not selfediting  %} {{ url_for('admin_user_delete') }} {% endif %}",
-                    { id: {{ user.id }} }).done(function(e) {
-                  if(JSON.parse(e)["ok"] === true) {
-                    window.location = {{ url_for('login') }};
-                  }
-                  else
-                  {
-                    location.reload();
-                  }
-                });;
-              }
-
-      });
-});
-</script>
-  {% endif %}
+  <script type="text/javascript">
+    var editType = "user";
+  </script>
+  <script src="{{ url_for('static', filename='js/edit_interaction.js') }}"></script>
 {% endblock %}
 
 

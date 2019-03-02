@@ -20,11 +20,6 @@
             </p>
 
             <p class="control">
-                <label class="label">Number of Recent Posts to Display</label>
-                <input type="text" class="input" name="number-of-recent-posts" value="{{current_settings.number_of_recent_posts}}">
-            </p>
-
-            <p class="control">
                 <label class="label">Max Characters in Synposis</label>
                 <input type="text" class="input" name="max-synopsis-chars" value="{{current_settings.max_synopsis_chars}}">
             </p>
@@ -49,14 +44,13 @@
                 <input type="text" class="input" name="icon-2-icon-type" value="{{current_settings.icon_2_icon_type}}">
             </p>
 
+            <p class="control">
+                <label class="label">Number of entries per table page in list views</label>
+                <input type="text" class="input" name="table-entries-per-page" value="{{current_settings.table_entries_per_page}}">
+            </p>
+
             <div class="has-text-right"><button class="button is-primary">Save</button></div>
         </form>
-    </div>
-
-    <div class="box" id="preview-box" style="display:none;">
-        <div class="preview-post content">
-            <a name="view-preview"></a>
-        </div>
     </div>
 </div>
 {% endblock %}
