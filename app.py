@@ -14,10 +14,12 @@ from playhouse.postgres_ext import *
 from pagination import Pagination
 import util
 
+# TODO: Proper Responsiveness
+# TODO: Refactor: Grid css instead of flex
+
 # TODO: Proper exception/abort cases
 # TODO: If navburger dropdown always extend search field
 # TODO: Synopsis of posts
-# TODO: Refactor: everything
 # TODO: Minimize static components
 # TODO: Slugs
 
@@ -44,6 +46,7 @@ app.config.from_object("config.Config")
 # Before first request: Create database tables. Make sure to have the postgres extension 'hstore' installed on the db.
 @app.before_first_request
 def setup_database():
+    # Create data tables
     postgres_db.create_tables([User, Post, PostUser, Tag, PostTag, Settings], safe=True)
 
     # Adding gin index to Post.content and Tag.name for faster search
@@ -133,20 +136,22 @@ app.jinja_env.lstrip_blocks = True
 ###             Routes               ###
 ########################################
 
-# Create a standard admin user. Production only!!! TODO: REMOVE!!!
-@app.route('/init')
-def init_user():
-    try:
-        User.create(name="admin", password=bcrypt.hashpw(b"password", bcrypt.gensalt()), admin=True)
-        flash("Created user: admin", 'success')
+# Create a standard admin user. Testing only!!!
 
-    except peewee.IntegrityError:
-        flash("User admin already exists", 'danger')
+if app.testing == True:
+    @app.route('/init')
+    def init_user():
+        try:
+            User.create(name="admin", password=bcrypt.hashpw(b"password", bcrypt.gensalt()), admin=True)
+            flash("Created user: admin", 'success')
 
-    if current_user.is_authenticated:
-        return redirect(url_for('admin_user_list'))
-    else:
-        return redirect(url_for('login'))
+        except peewee.IntegrityError:
+            flash("User admin already exists", 'danger')
+
+        if current_user.is_authenticated:
+            return redirect(url_for('admin_user_list'))
+        else:
+            return redirect(url_for('login'))
 
 ### Login / Logout ###
 
