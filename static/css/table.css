@@ -1,6 +1,36 @@
+#table-block{
+	flex-grow: 1;
+	height: 100%;
+	display:flex;
+	flex-direction: column;
+}
+
+#table-container{
+	flex-grow: 1;
+	height: 100%;
+	idth:100%;
+	overflow:auto;
+	overflow-x: auto;
+	background-color: #fff;
+}
+
+.table{
+	width:100%;
+	flex: 1;
+}
+
 .list-row-active {
     background-color:#bcfffc !important;
 }
+
+.level-item.in-table{
+	margin-top:12px;
+}
+
+#table-pagination{
+	 align:flex-self;
+}
+
 
 table .sort:before {
 	font-family: FontAwesome;

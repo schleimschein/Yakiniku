@@ -15,47 +15,44 @@ body{
     min-height: 100vh;
 }
 
-.main-section {
+#main-section {
     padding-top: 3.465rem;
     flex:1;
     display:flex;
     flex-flow: column;
 }
 
-.main-content{
+#main-columns{
     flex:1;
     align-items:stretch;
 }
 
-.body-container{
+#main-container{
     flex:1;
     display:flex;
     flex-flow: column;
     margin: 0; /* No margin, posts (boxes) shall always fill the entire container - even if they dont have enough content */
-
 }
 
-.body-column{
+#main-column{
     flex:1;
-    display:flex;
     flex-flow: column;
+    display:flex;
     overflow:auto;
 }
 
-#error-container{
+#main-vcentered-column{
+    flex-flow: row;
     display: flex;
-    flex-flow: column;
-    height: 65%;
+    overflow: auto;
+    align-items: center;
+    justify-items: center;
     justify-content: center;
-    margin: 0;
+
 }
 
-#login-container{
-    display: flex;
-    flex-flow: column;
-    height: 65%;
-    justify-content: center;
-    margin: 0;
+#login-form{
+    flex:1;
 }
 
 #preview{
@@ -66,3 +63,12 @@ body{
 #preview-heading {
     text-decoration:none;
 }
+
+#post{
+    height:6em;
+}
+
+.pagination{
+    margin-top: auto;
+}
+

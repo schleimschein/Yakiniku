@@ -26,17 +26,6 @@
     All credit therefor goes to Adam Lamers
     http://blog.adamlamers.com/blog
 
-     ___     ___    __   ______
-                                              ,-.
-                                              / /
- .-----.   .----.  .---..--------.           / /        .-----.   .----.  .---.  .-----.
-/ ,-.   \ /  ..  \/_   ||   __   '          / /        / ,-.   \ /  ..  \/_   | /  .-.  \
-'-'  |  |.  /  \  .|   |`--' .  /          / /         '-'  |  |.  /  \  .|   ||   \_.' /
-   .'  / |  |  '  ||   |    /  /          / /             .'  / |  |  '  ||   | /  .-. '.
- .'  /__ '  \  /  '|   |   .  /          / /            .'  /__ '  \  /  '|   ||  |   |  |
-|       | \  `'  / |   |  /  /          / /            |       | \  `'  / |   | \  '-'  /
-`-------'  `---''  `---' `--'           `-'            `-------'  `---''  `---'  `----''
-
 -->
 <html lang="en has-navbar-fixed-top">
 <head>
@@ -53,45 +42,44 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" media="all">
 
-
-
-    {% block head %}
+    {% block css %}
     {% endblock %}
 </head>
 
 <body class="{% if not height_is_view_port %}height-is-at-least-viewport{% else %}height-is-viewport{% endif %}">
 
-
     {% include 'navbar.html' %}
 
-
-    <section class="section main-section">
+    <section class="section" id="main-section">
             <div id="flashed-messages" class="content">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
-                <div class="notification is-{{ category }} has-delete">
-                    <button class="delete"></button>
-                    {{ message }}
-                </div>
+                  <div class="notification is-{{ category }} has-delete">
+                      <button class="delete"></button>
+                      {{ message }}
+                  </div>
                 {% endfor %}
             </div>
-            <div class="columns main-content">
-            {% if self.left_to_body_column_not_in_column | trim %}
-                {% block left_to_body_column_not_in_column %}
-                {% endblock %}
-            {% endif %}
 
+            <div class="columns" id="main-columns">
             {% if self.sidebar() | trim %}
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
                     {% endblock %}
                 </div>
             {% endif %}
-                <div class="column body-column">
-                  <div class="container is-fluid body-container">
-                  {% block body %}
+            {% if self.main() %}
+                <div class="column" id="main-column">
+                  <div class="container is-fluid" id="main-container">
+                    {% block main %}
                     {% endblock %}
                   </div>
                 </div>
+            {% elif self.main_vcentered() %}
+                <div class="column is-4 is-offset-4" id="main-vcentered-column">
+                    {% block main_vcentered%}
+                    {% endblock %}
+                </div>
+            {% endif %}
             </div>
     </section>
 

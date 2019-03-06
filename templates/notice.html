@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %} Blog Posts {% endblock %}
+
+{% block main_vcentered %}
+    <div class="content" id="notice">
+          <h1 class="title">{{ notice | safe }}</h1>
+    </div>
+{% endblock %}

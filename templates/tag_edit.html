@@ -6,7 +6,7 @@
 {% endblock %}
 
 
-{% block head %}
+{% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
 {% endblock %}
@@ -29,7 +29,7 @@
   {% endblock %}
 {% endif %}
 
-{% block body %}
+{% block main %}
     <div class="content">
         <form action="{{ url_for('admin_tag_save') }}" method="POST" id="tag-form">
           <div class="field">
@@ -60,12 +60,6 @@
               {% endif %}
           </div>
         </form>
-    </div>
-
-    <div class="box" id="preview-box" style="display:none;">
-        <div class="preview-post content">
-            <a name="view-preview"></a>
-        </div>
     </div>
 {% endblock %}
 

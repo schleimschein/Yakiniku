@@ -1,30 +1,24 @@
 {% extends "base.html" %}
 
-{% block head %}
+{% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}" media="all">
 {% endblock %}
 
-{% block body %}
-<!-- begin post box -->
 
+{% block main%}
+<!-- begin post box -->
   {% if query and posts_with_tags %}
-  <p class="title is-3">Search results for {{ query }} </p>
-  {% elif query and not posts_with_tags %}
-  <p class="title is-3">No search results for {{ query }}   :( </p>
+    <p class="title is-3">Search results for {{ query }} </p>
   {% endif %}
 
-  {% for post,tags in posts_with_tags%}
-      {% include 'post.html' %}
-  {% else %}
-  <div class="container" style="flex:1; display:flex; flex-flow: column; justify-content: center;">
-    <div class="content has-text-centered">
-          <h1 class="title">Nothing to see here</h1>
-    </div>
-  </div>
-  {% endfor %}
+  {% if posts_with_tags %}
+    {% for post,tags in posts_with_tags%}
+        {% include 'post.html' %}
+      {% endfor %}
+  {% endif %}
 
   {% if pages %}
-    <nav class="pagination is-centered" role="navigation" aria-label="pagination" style="margin-top: auto;">
+    <nav class="pagination is-centered" role="navigation" aria-label="pagination">
     <a class="button pagination-previous is-primary is-outlined" {% if pages.has_prev %} href="{% block pagination_previous_link %}{% endblock %}" {% else %} disabled="disabled" {% endif %}>
         Newer
     </a>

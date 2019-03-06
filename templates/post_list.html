@@ -5,7 +5,7 @@
   Post List
 {% endblock %}
 
-{% block head %}
+{% block css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
 {% endblock %}
@@ -17,7 +17,7 @@
             Options
         </div>
 
-        <a class="panel-block" href="{{ url_for('compose') }}">
+        <a class="panel-block" href="{{ url_for('compose')}}">
             <span class="panel-icon">
                 <i class="fa fa-plus"></i>
             </span>
@@ -41,79 +41,79 @@
 </div>
 {% endblock %}
 
-{% block body %}
- <div id="posts"  style="flex-grow: 1; height: 100%; display:flex; flex-direction: column; align-content:stretch;" >
-   <div id="table-container"  style="flex-grow: 1; height: 100%; width:100%; overflow:auto; overflow-x: auto; background-color: #fff;" >
-     <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
-          <thead>
-              <tr>
-                  <th class="sort" data-sort="post-id">ID</th>
-                  <th class="sort" data-sort="post-title">Title</th>
-                  <th class="sort" data-sort="post-tags">Tags</th>
-                  <th class="sort" data-sort="post-published">Publ.</th>
-                  <th class="sort" data-sort="post-user">User</th>
-                  <th class="sort" data-sort="post-date_posted">Posted</th>
-                  <th class="sort" data-sort="post-date_updated">Updated</th>
-              </tr>
-          </thead>
+{% block main%}
+ <div id="table-block">
+   <div id="table-container">
+     <table class="table is-hoverable is-fullwidth is-striped">
+        <thead>
+          <tr>
+            <th class="sort" data-sort="post-id">ID</th>
+            <th class="sort" data-sort="post-title">Title</th>
+            <th class="sort" data-sort="post-tags">Tags</th>
+            <th class="sort" data-sort="post-published">Publ.</th>
+            <th class="sort" data-sort="post-user">User</th>
+            <th class="sort" data-sort="post-date_posted">Posted</th>
+            <th class="sort" data-sort="post-date_updated">Updated</th>
+          </tr>
+        </thead>
           <tbody class="list" >
-              {% for post,user,tags in posts_with_user_and_tags %}
-              <tr class="post-row">
-                  <td class="post-id" data-id="{{ post.id }}">
-                    {{ post.id }}
-                  </td>
-                  <td class="post-title" data-title="{{ post.title }}">
-                    <a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a>
-                  </td>
-                  {% set comma = joiner(",") %}
-                  <td class="post-tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
-                  {% for tag in tags %}
-                    <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
-                  {% endfor %}
-                  <td class="post-published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
-                    <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span>
-                  </td>
-                  <td class="post-user" data-user="{% if user %}{{ user.name }}{% endif %}">
-                  {% if user %}
-                    <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a>
-                  {% elif not user %}
-                    Deleted
-                  {% endif %}
-                  </td>
-                  <td class="post-date-posted" data-posted="{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
-                    {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
-                  </td>
-                  <td class="post-date-updated" data-updated="{{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
-                    {{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
-                  </td>
-              </tr>
-              {% else %}
-              <tr>
-                  <td class="has-text-centered" colspan="3"> No Posts To Display </td>
-              </tr>
+            {% for post,user,tags in posts_with_user_and_tags %}
+            <tr class="post-row">
+              <td class="post-id" data-id="{{ post.id }}">
+                {{ post.id }}
+              </td>
+              <td class="post-title" data-title="{{ post.title }}">
+                <a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a>
+              </td>
+              {% set comma = joiner(",") %}
+              <td class="post-tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
+              {% for tag in tags %}
+                <a href="{{ url_for('tag_view', tag_name=tag.name) }}" class="tag">{{ tag.name}}</a>
               {% endfor %}
+              <td class="post-published" data-published="{% if post.published %}published{% elif not post.published %}draft{% endif %}">
+                <span class="panel-icon"><i class="fa fa-circle {% if post.published %} has-text-primary {% endif %}  "></i></span>
+              </td>
+              <td class="post-user" data-user="{% if user %}{{ user.name }}{% endif %}">
+              {% if user %}
+                <a href="{{ url_for('user_view', user_name=user.name) }}">{{ user.name}}</a>
+              {% elif not user %}
+                Deleted
+              {% endif %}
+              </td>
+              <td class="post-date-posted" data-posted="{{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+              </td>
+              <td class="post-date-updated" data-updated="{{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}">
+                {{ post.updated_at.strftime("%Y-%m-%d %H:%M:%S") }}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="has-text-centered" colspan="7"> No Posts To Display </td>
+            </tr>
+            {% endfor %}
           </tbody>
       </table>
    </div>
-  <nav class="level">
-    <div class="level-left">
-      <div class="level-item" style="margin-top:12px;">
-        <div class="control has-icons-left" id="">
+    <nav class="level">
+      <div class="level-left">
+        <div class="level-item in-table">
+          <div class="control has-icons-left">
             <input class="input is-small" id="list-search-field" size="20" type="text" placeholder="Search Post">
             <span class="icon is-small is-left">
               <i class="fa fa-search"></i>
             </span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="level-left">
-      <div class="level-item" style="margin-top:12px;">
-        <nav class="pagination is-right is-small" role="navigation" style="align:flex-self; " aria-label="pagination">
-      <ul class="pagination-list"></ul>
-    </nav>
+      <div class="level-left">
+        <div class="level-item in-table">
+          <nav class="pagination is-right is-small" id="table-pagination" role="navigation" aria-label="pagination">
+            <ul class="pagination-list"></ul>
+          </nav>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
  </div>
 
 {% endblock %}
@@ -123,7 +123,7 @@
 <script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
 <script type="text/javascript">
 var table_entries_per_page = {{settings.table_entries_per_page}};
-var listType = "post";
+var listType = "post"; // for list_interactions.js
 var optionsList = {
   valueNames: [
     { name: 'post-id', attr: 'data-id'},
@@ -140,7 +140,7 @@ var optionsList = {
     outerWindow: 1
   }]
 };
-var List = new List(listType+'s', optionsList);
+var List = new List("table-block", optionsList);
 </script>
 <script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
 {% endblock %}

@@ -2,7 +2,7 @@
 
 {% block title %}View{% endblock %}
 
-{% block head %}
+{% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
 {% endblock %}
 
@@ -13,7 +13,7 @@
 {% endif %}
 
 
-{% block body %}
+{% block main %}
   {% if post.published or current_user.is_authenticated  %}
     {% if not post.published %}
       <div class="notification is-warning has-text-centered is-size-5 has-delete">

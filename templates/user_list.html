@@ -6,7 +6,7 @@
   User List
 {% endblock %}
 
-{% block head %}
+{% block css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
 {% endblock %}
@@ -49,10 +49,10 @@
 </div>
 {% endblock %}
 
-{% block body %}
-  <div id="users"  style="flex-grow: 1; height: 100%; display:flex; flex-direction: column; align-content:stretch;" >
-   <div id="table-container"  style="flex-grow: 1; height: 100%; width:100%; overflow:auto; overflow-x: auto; background-color: #fff;" >
-     <table class="table is-hoverable is-fullwidth is-striped" style="width:100%;">
+{% block main %}
+  <div id="table-block">
+   <div id="table-container">
+     <table class="table is-hoverable is-fullwidth is-striped">
           <thead>
               <tr>
                   <th class="sort" data-sort="user-id">ID</th>
@@ -82,7 +82,7 @@
               </tr>
               {% else %}
               <tr>
-                  <td class="has-text-centered" colspan="3"> No Users To Display </td>
+                  <td class="has-text-centered" colspan="5"> No Users To Display </td>
               </tr>
               {% endfor %}
           </tbody>
@@ -90,8 +90,8 @@
    </div>
   <nav class="level">
     <div class="level-left">
-      <div class="level-item" style="margin-top:12px;">
-        <div class="control has-icons-left" id="">
+      <div class="level-item in-table" >
+        <div class="control has-icons-left">
             <input class="input is-small" id="list-search-field" size="20" type="text" placeholder="Search User">
             <span class="icon is-small is-left">
               <i class="fa fa-search"></i>
@@ -100,8 +100,8 @@
       </div>
     </div>
     <div class="level-left">
-      <div class="level-item" style="margin-top:12px;">
-        <nav class="pagination is-right is-small" role="navigation" style="align:flex-self; " aria-label="pagination">
+      <div class="level-item in-table">
+        <nav class="pagination is-right is-small" id="table-pagination" role="navigation" aria-label="pagination">
       <ul class="pagination-list"></ul>
     </nav>
       </div>

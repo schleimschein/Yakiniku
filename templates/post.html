@@ -35,7 +35,7 @@
 
         <span class="content post-content">
           {% if post is defined %}
-            {{ post.content }}
+            {{ post.description }} <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">...</a>
           {% endif %}
         </span>
           <nav class="level tag-bar">

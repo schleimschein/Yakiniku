@@ -19,47 +19,41 @@
 </div>
 {% endblock %}
 
-{% block body %}
-    <div class="content">
-      <form action="{% if selfediting %} {{ url_for('profile_user_save') }} {% elif not selfediting  %} {{ url_for('admin_user_save') }} {% endif %}" method="POST" id="user-form">
-            {% if not editing %}
-            <label class="label">Create User</label>
-            {% else %}
-            <label class="label">Edit User {{ user.name }}</label>
-            {% endif %}
-            <p class="control">
-                {% if not editing %}
-                <input type="text" name="user-name" class="input" placeholder="Username">
-                {% else %}
-                <input type="text" name="user-name" class="input" value="{{ user.name }}">
-                {% endif %}
-            </p>
-            <p class="control">
-                <input class="input" type="password" name="user-password" placeholder="Password">
-            </p>
-            <p class="control">
-                <label class="checkbox">
-                {% if not editing %}
-                <input type="checkbox" name="user-is-admin">
-                {% else %}
-                <input type="checkbox" name="user-is-admin" {% if user.admin %} checked="checked" {% endif %}>
-                {% endif %}
-                    Administrator Privileges
-                </label>
-            </p>
-            <div class="has-text-right"><button class="button is-primary">Save</button></div>
+{% block main %}
+  <div class="content">
+    <form action="{% if selfediting %} {{ url_for('profile_user_save') }} {% elif not selfediting  %} {{ url_for('admin_user_save') }} {% endif %}" method="POST" id="user-form">
+      {% if not editing %}
+      <label class="label">Create User</label>
+      {% else %}
+      <label class="label">Edit User {{ user.name }}</label>
+      {% endif %}
+      <p class="control">
+        {% if not editing %}
+        <input type="text" name="user-name" class="input" placeholder="Username">
+        {% else %}
+        <input type="text" name="user-name" class="input" value="{{ user.name }}">
+        {% endif %}
+      </p>
+      <p class="control">
+          <input class="input" type="password" name="user-password" placeholder="Password">
+      </p>
+      <p class="control">
+        <label class="checkbox">
+        {% if not editing %}
+        <input type="checkbox" name="user-is-admin">
+        {% else %}
+        <input type="checkbox" name="user-is-admin" {% if user.admin %} checked="checked" {% endif %}>
+        {% endif %}
+            Administrator Privileges
+        </label>
+      </p>
+      <div class="has-text-right"><button class="button is-primary">Save</button></div>
 
-            {% if editing %}
-            <input type="hidden" name="user-edit-id" value="{{ user.id }}">
-            {% endif %}
-        </form>
-    </div>
-
-    <div class="box" id="preview-box" style="display:none;">
-        <div class="preview-post content">
-            <a name="view-preview"></a>
-        </div>
-    </div>
+      {% if editing %}
+      <input type="hidden" name="user-edit-id" value="{{ user.id }}">
+      {% endif %}
+      </form>
+  </div>
 {% endblock %}
 
 {% block javascript %}

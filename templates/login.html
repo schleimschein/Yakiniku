@@ -2,11 +2,8 @@
 
 {% block title %}Login{% endblock %}
 
-{% block body %}
-<div class="container" id="login-container">
-  <div class="columns">
-        <div class="column is-one-third is-offset-one-third">
-            <form action="{{ url_for('do_login') }}" method="POST">
+{% block main_vcentered %}
+            <form id="login-form" action="{{ url_for('do_login') }}" method="POST">
 
               <div class="field">
                 <label class="label">Login</label>
@@ -28,7 +25,4 @@
               </div>
 
             </form>
-        </div>
-    </div>
-</div>
 {% endblock %}

@@ -14,12 +14,10 @@ from playhouse.postgres_ext import *
 from pagination import Pagination
 import util
 
-# TODO: Proper Responsiveness
-# TODO: Refactor: Grid css instead of flex
 
-# TODO: Proper exception/abort cases
+# TODO: Content editor is properly fucked
+# TODO: Proper Responsiveness
 # TODO: If navburger dropdown always extend search field
-# TODO: Synopsis of posts
 # TODO: Minimize static components
 # TODO: Slugs
 
@@ -219,16 +217,20 @@ def blog(page):
     else:
         posts = Post.select().where(Post.published).order_by(Post.created_at.desc())
 
-    total_posts = Post.select().count()
+    number_of_posts = Post.select().count()
     posts = posts.paginate(page, settings.posts_per_page)
 
     for post in posts:
         tags = Tag.select().join(PostTag).where(PostTag.post == post).order_by(Tag.name)
         posts_with_tags.append([post, tags])
 
-    pages = Pagination(page, settings.posts_per_page, total_posts, 7)
+    pages = Pagination(page, settings.posts_per_page, number_of_posts, 7)
 
-    return render_template('blog.html', posts_with_tags=posts_with_tags, pages=pages)
+    if not number_of_posts == 0:
+        return render_template('blog_list.html', posts_with_tags=posts_with_tags, pages=pages)
+    else:
+        notice = "No posts yet  :/"
+        return render_template('notice.html', notice=notice)
 
 # Post view
 @app.route('/post/<int:pid>')
@@ -240,8 +242,8 @@ def post(pid, ):
         user = User.select().join(PostUser, peewee.JOIN.LEFT_OUTER).where(PostUser.post == post)
         if user:
             user = user[0]
-    except Post.DoesNotExist:
-        abort(404)
+    except Post.DoesNotExist: # Since a non-existent post id leads to a query exception, the appropriate response is the
+        abort(404)            # 404 error, not a notice
     return render_template('post_view.html', post=post, tags=tags, user=user)
 
 # Blog view of all posts with a certain tag
@@ -269,10 +271,11 @@ def tag_view(tag_name, page):
 
     pages = Pagination(page, settings.posts_per_page, number_of_matches, 7)
 
-    if not len(matches) == 0:
+    if not number_of_matches == 0:
         return render_template('tag_view.html', posts_with_tags=matches_with_tags, pages=pages, tag_name=tag_name)
     else:
-        return render_template('40x.html', notice="No posts with this tag")
+        notice="No posts with tag " + '"' + str(tag_name) + '"!'
+        return render_template('notice.html', notice=notice )
 
 # Blog view of all posts by a certain user
 @app.route('/user/<user_name>', defaults={'page': 1})
@@ -288,7 +291,7 @@ def user_view(user_name, page):
         matches = Post.select().where(Post.published).join(PostUser).join(User)\
             .where(User.name == user_name).order_by(Post.created_at.desc())
 
-    total_matches = matches.count()
+    number_of_matches = matches.count()
     matches = matches.paginate(page, settings.posts_per_page)
 
     matches_with_tags = []
@@ -297,11 +300,13 @@ def user_view(user_name, page):
             .where(PostTag.post == match).order_by(Tag.name)
         matches_with_tags.append([match, tags])
 
-    pages = Pagination(page, settings.posts_per_page, total_matches, 7)
+    pages = Pagination(page, settings.posts_per_page, number_of_matches, 7)
 
-    if not len(matches) == 0:
+    if not number_of_matches == 0:
         return render_template('user_view.html', posts_with_tags=matches_with_tags, pages=pages, user_name=user_name)
-    return render_template('40x.html', notice="No posts by this user")
+    else:
+        notice = "No posts by user " + '"' + str(user_name) + '"!'
+        return render_template('notice.html', notice=notice )
 
 
 # Search
@@ -349,6 +354,7 @@ def search_view(query, page):
     posts_matched = posts_matched_content + posts_matched_title + posts_matched_tag
 
     number_of_matched_posts = posts_matched.count()
+
     posts_matched = posts_matched.paginate(page, settings.posts_per_page)
 
     posts_with_tags = []
@@ -359,11 +365,16 @@ def search_view(query, page):
 
     pages = Pagination(page, settings.posts_per_page, number_of_matched_posts, 7)
 
-    return render_template('search_view.html',
-                           posts_with_tags=posts_with_tags,
-                           pages=pages,
-                           query=query,
-                           current=search_view)
+    if not number_of_matched_posts == 0:
+        return render_template('search_view.html',
+                               posts_with_tags=posts_with_tags,
+                               pages=pages,
+                               query=query,
+                               current=search_view)
+
+    else:
+        notice = "No search results for " + str(query) + " !"
+        return render_template('notice.html', notice=notice)
 
 
 # Preview a post below the compose view
@@ -473,7 +484,7 @@ def admin_save_post():
 
             except peewee.IntegrityError:
                 print("peewee.IntegrityError")
-                abort(404)
+                abort(400)
     else:
         flash("Empty post", "danger")
 
@@ -863,18 +874,18 @@ def admin_settings_save():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    notice = """Nothing to see here!"""
-    return render_template('40x.html', notice=notice), 404
+    notice = """404: Nothing to see here!"""
+    return render_template('notice.html', notice=notice), 404
 
 @app.errorhandler(400)
 def bad_request(e):
-    notice = """Bad request. Nothing to see here!"""
-    return render_template('40x.html', notice=notice), 400
+    notice = """400: Bad request!"""
+    return render_template('notice.html', notice=notice), 400
 
 @app.errorhandler(DatabaseError)
 def special_exception_handler(error):
-    return 'Database connection failed', 500
-
+    notice = """500: Something went wrong!"""
+    return render_template('notice.html', notice=notice), 500
 
 
 if __name__ == '__main__':
