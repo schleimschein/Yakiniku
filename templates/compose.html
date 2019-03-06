@@ -5,6 +5,7 @@
 {% block title %} New Post {% endblock %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}" media="all">
@@ -43,8 +44,9 @@
 {% endblock %}
 
 {% block main%}
-    <div class="content" id="post-form-container ">
+    <div id="post-form-container ">
         <form action="{{ url_for('admin_save_post') }}" method="POST" id="post-form">
+          <div class="field">
             <label class="label">Post Title</label>
             <p class="control">
                 {% if not editing %}
@@ -53,14 +55,20 @@
                 <input type="text" id="post-form-title" name="post-form-title" class="input" placeholder="No Title" value="{{ post.title }}">
                 {% endif %}
             </p>
+          </div>
+          <div class="field">
             <label class="label">Short Description</label>
             <p class="control">
                 <textarea class="input" name="post-form-description" id="post-description-editor">{% if editing %}{{ post.description }}{% endif %}</textarea>
             </p>
+          </div>
+          <div class="field">
             <label class="label">Content</label>
             <p class="control">
               <textarea name="post-form-content" id="post-form-content-editor">{% if editing %}{{ post.content }}{% endif %}</textarea>
             </p>
+          </div>
+          <div class="field">
             <label class="label">Tags</label>
             <p class="control">
                 {% if not editing %}
@@ -70,6 +78,8 @@
                 {% endif %}
                 <div id="all-tags" all-tags="{% for tag in all_tags %}{{ comma() }}{{tag.name}}{% endfor %}"></div>
             </p>
+          </div>
+          <div class="field">
             <label class="label"> Status</label>
             <p class="control">
             {% if not editing %}
@@ -79,6 +89,7 @@
             {% endif %}
               <label class="label" id="post-form-publish-switch-label" for="post-form-publish-switch">Publish</label>
             </p>
+          </div>
 
             {% if editing %}
                 <input type="hidden" name="post-edit-id" value="{{ post.id }}">
