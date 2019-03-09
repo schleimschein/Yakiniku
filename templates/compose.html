@@ -7,8 +7,8 @@
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/simplemde.min.css') }}" media="all">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma-switch.min.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.css') }}" media="all">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tagify_bulma_flavoured.min.css') }}" media="all">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/post.min.css') }}" media="all">
 {% endblock %}
 
 {% block sidebar %}
@@ -127,5 +127,5 @@
   var postFormEditor = new SimpleMDE({ element: document.getElementById("post-form-content-editor")});
 
 </script>
-<script src="{{url_for('static', filename='js/compose_interactions.js')}}"></script>
+<script src="{{url_for('static', filename='js/compose_interactions.min.js')}}"></script>
 {% endblock %}

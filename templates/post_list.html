@@ -63,7 +63,7 @@
                 {{ post.id }}
               </td>
               <td class="post-title" data-title="{{ post.title }}">
-                <a href="{{ url_for('post', pid=post.id) }}">{{ post.title }}</a>
+                <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
               </td>
               {% set comma = joiner(",") %}
               <td class="post-tags" data-tags="{% for tag in tags %}{{ comma() }}{{ tag.name}}{% endfor %}">
@@ -142,5 +142,5 @@ var optionsList = {
 };
 var List = new List("table-block", optionsList);
 </script>
-<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/list_interactions.min.js') }}"></script>
 {% endblock %}

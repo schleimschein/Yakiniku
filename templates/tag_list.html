@@ -7,8 +7,8 @@
 {% endblock %}
 
 {% block css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.min.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.min.css') }}" media="all">
 {% endblock %}
 
 {% block sidebar %}
@@ -127,5 +127,5 @@ var optionsList = {
 };
 var List = new List("table-block", optionsList);
 </script>
-<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/list_interactions.min.js') }}"></script>
 {% endblock %}
