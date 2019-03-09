@@ -60,6 +60,10 @@
             </div>
 
             <div class="columns" id="main-columns">
+            {% if self.left_to_body_column_not_in_column | trim %}
+                {% block left_to_body_column_not_in_column %}
+                {% endblock %}
+            {% endif %}
             {% if self.sidebar() | trim %}
                 <div class="column is-narrow sidebar">
                     {% block sidebar %}
@@ -88,7 +92,6 @@
       </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/simplemde.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
 
     <script src="{{ url_for('static', filename='js/delete.js') }}"></script>

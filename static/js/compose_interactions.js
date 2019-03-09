@@ -48,12 +48,12 @@
      httpRequest.setRequestHeader("Content-Type", "application/json");
      // If http request is success, set post title, description, content & tags and unhide it to preview
      httpRequest.onload = function () {
-       let  postPreviewContent_html = JSON.parse(httpRequest.response)["html"];
+       var postPreviewContent_html = JSON.parse(httpRequest.response)["html"];
 
        postPreviewHeading.innerHTML = postFormData.postTitle;
        postPreviewContent.innerHTML = postPreviewContent_html;
        for (var i = 0; i < postFormData.tags.length; i++) {
-         let postPreviewTag_html = '<a class="level-item tag is-primary post-tag">' + postFormData.tags[i] + '</a>';
+         var postPreviewTag_html = '<a class="level-item tag is-primary post-tag">' + postFormData.tags[i] + '</a>';
          postPreviewTags.insertAdjacentHTML('beforeend', postPreviewTag_html);
        }
 

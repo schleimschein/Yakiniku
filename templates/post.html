@@ -2,7 +2,7 @@
         <span class="content is-pulled-right blog-post-card-icons">
           {% if current_user.admin %}
             {% if post is defined %}
-              <a class="icon" href="{{ url_for('admin_edit_post', pid=post.id) }}">
+              <a class="icon" href="{{ url_for('admin_edit_post', pid=post.id, slug=post.slug) }}">
                 <i class="fa fa-pencil"></i>
               </a>
             {% endif %}

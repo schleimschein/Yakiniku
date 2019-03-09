@@ -15,11 +15,8 @@ from pagination import Pagination
 import util
 
 
-# TODO: Content editor is properly fucked
 # TODO: Proper Responsiveness
-# TODO: If navburger dropdown always extend search field
 # TODO: Minimize static components
-# TODO: Slugs
 
 ########################################
 ### Initializing and defining Stuff  ###
@@ -234,7 +231,9 @@ def blog(page):
 
 # Post view
 @app.route('/post/<int:pid>')
-def post(pid, ):
+@app.route('/post/<int:pid>/<slug>')
+
+def post(pid, slug=None):
     post = None
     try:
         post = Post.get(Post.id == pid)
@@ -321,35 +320,35 @@ def search():
 def search_view(query, page):
     settings = util.get_current_settings()
 
-    query = "\'" + query + "\'" # the quotation marks are absolutely necessary for a pg tsquery with multiple words
+    query_str = "\'" + query + "\'" # the quotation marks are absolutely necessary for a pg tsquery with multiple words
 
     if current_user.is_authenticated:
         if current_user.admin:
             posts_matched_content = Post.select()\
-                .where((Match(Post.content, query) == True))
+                .where((Match(Post.content, query_str) == True))
             posts_matched_title = Post.select()\
-                .where((Match(Post.title, query) == True)
-                       & (Match(Post.content, query) == False))
+                .where((Match(Post.title, query_str) == True)
+                       & (Match(Post.content, query_str) == False))
             posts_matched_tag = Post.select().join(PostTag).join(Tag)\
-                .where((Match(Tag.name, query) == True)
-                       & (Match(Post.title, query) == False)
-                       & (Match(Post.content, query) == False))
+                .where((Match(Tag.name, query_str) == True)
+                       & (Match(Post.title, query_str) == False)
+                       & (Match(Post.content, query_str) == False))
 
 
 
     else:
         posts_matched_content = Post.select()\
                 .where((Post.published == True)
-                       & (Match(Post.content, query) == True))
+                       & (Match(Post.content, query_str) == True))
         posts_matched_title = Post.select()\
                 .where((Post.published == True)
-                       & (Match(Post.title, query) == True)
-                       & (Match(Post.content, query) == False))
+                       & (Match(Post.title, query_str) == True)
+                       & (Match(Post.content, query_str) == False))
         posts_matched_tag = Post.select().join(PostTag).join(Tag) \
                 .where((Post.published == True)
-                       & (Match(Tag.name, query) == True)
-                       & (Match(Post.title, query) == False)
-                       & (Match(Post.content, query) == False))
+                       & (Match(Tag.name, query_str) == True)
+                       & (Match(Post.title, query_str) == False)
+                       & (Match(Post.content, query_str) == False))
 
     posts_matched = posts_matched_content + posts_matched_title + posts_matched_tag
 
@@ -373,7 +372,7 @@ def search_view(query, page):
                                current=search_view)
 
     else:
-        notice = "No search results for " + str(query) + " !"
+        notice = "No search results for " + str(query_str) + " !"
         return render_template('notice.html', notice=notice)
 
 
