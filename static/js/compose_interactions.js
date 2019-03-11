@@ -36,7 +36,7 @@
   // Preview option
   (function() {
    var clickHandler = function () {
-     postFormData = { };
+     var postFormData = { };
      postFormData.title = postFormTitle.value.trim();
      postFormData.content_markdown = postFormEditor.value();
      postFormData.tags = postFormTags.value.trim().split(',');
@@ -47,6 +47,7 @@
      httpRequest.open('POST', url);
      httpRequest.setRequestHeader("Content-Type", "application/json");
      // If http request is success, set post title, description, content & tags and unhide it to preview
+
      httpRequest.onload = function () {
        var postPreviewContent_html = JSON.parse(httpRequest.response)["html"];
 

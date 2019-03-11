@@ -2,14 +2,27 @@
     font-size:1.5em;
 }
 
-.nav-icons {
-    font-size:2.5em;
+.logo-text:hover {
+    color:hsl(171, 100%, 41%) ! important;
 }
 
 .navbar{
-    background: #f5f7fa;
     border:none;
     box-shadow: none;
+}
+
+.navbar-item:hover {
+    color: hsl(171, 100%, 41%) ! important;
+    background-color: #ffffff ! important;
+}
+
+.navbar-item.is-tab:hover{
+    border-bottom-color: hsl(171, 100%, 41%) ! important;
+}
+
+.navbar-item.is-tab.is-active{
+    color: hsl(171, 100%, 41%) ! important;
+    border-bottom-color: hsl(171, 100%, 41%) ! important;
 }
 
 #navbar-search-input{
@@ -30,11 +43,11 @@
 }
 
 #navbar-search-control:focus-within a:hover{
-    color: hsl(217, 71%, 53%) !important;
+    color: hsl(171, 100%, 41%) ! important;
 }
 
 #navbar-search-control:hover:not(:focus-within) a {
-    color: hsl(217, 71%, 53%) !important;
+    color: hsl(171, 100%, 41%) ! important;
 }
 
 #navbar-search-control:focus-within input {

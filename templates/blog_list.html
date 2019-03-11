@@ -25,13 +25,15 @@
     <a class="button pagination-next is-primary is-outlined" {% if pages.has_next %} href="{% block pagination_next_link %}{% endblock %}" {% else %} disabled="disabled" {% endif %}>
       Older
     </a>
-    <ul class="pagination-list">
-        {% for page in pages.elements %}
-        <li>
-            <a class="button pagination-link {% if page.number == pages.page %} is-primary is-outlined{% endif %}" href="{% block pagination_link scoped %}{% endblock %}">{{ page }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+    {% if pages.has_next and pages.has_prev %}
+      <ul class="pagination-list">
+          {% for page in pages.elements %}
+          <li>
+              <a class="button pagination-link {% if page.number == pages.page %} is-primary is-outlined{% endif %}" href="{% block pagination_link scoped %}{% endblock %}">{{ page }}</a>
+          </li>
+          {% endfor %}
+      </ul>
+    {% endif %}
 </nav>
 
   {% endif %}

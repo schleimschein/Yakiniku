@@ -6,8 +6,8 @@
 {% endblock %}
 
 {% block css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" media="all">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.min.css') }}" media="all">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.min.css') }}" media="all">
 {% endblock %}
 
 {% block sidebar %}
@@ -62,7 +62,7 @@
               <td class="post-id" data-id="{{ post.id }}">
                 {{ post.id }}
               </td>
-              <td class="post-title" data-title="{{ post.title }}">
+              <td class="post-title"  data-title="{{ post.title }}">
                 <a href="{{ url_for('post', pid=post.id, slug=post.slug) }}">{{ post.title }}</a>
               </td>
               {% set comma = joiner(",") %}

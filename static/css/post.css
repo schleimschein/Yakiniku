@@ -11,7 +11,7 @@
 
 .blog-post-card-icons .icon:hover
 {
-    color: hsl(217, 71%, 53%);
+    color:hsl(171, 100%, 41%) ! important;
 }
 
 .post-not-published{
@@ -83,7 +83,6 @@
 }
 
 .pagination-list > li{
-    list-style-type: none;
     list-style: none;
 }
 

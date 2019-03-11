@@ -6,9 +6,9 @@
       var deleteContainer = deleteContainers[i];
       var deletes = deleteContainer.getElementsByClassName('delete');
 
-      for(var i = 0; i < deletes.length; i++)
+      for(var j = 0; j < deletes.length; j++)
       {
-        var dlt = deletes[i];
+        var dlt = deletes[j];
 
         dlt.onclick = function()
         {

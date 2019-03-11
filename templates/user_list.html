@@ -114,9 +114,9 @@
 <!-- Fancy table functions via list_with_bulma.js. Unfortunately we have to tinker a bit with the pagination classes :/ -->
 <script src="{{ url_for('static', filename='js/list_with_bulma.js') }}"></script>
 <script type="text/javascript">
-  var table_entries_per_page = {{settings.table_entries_per_page}};
-  var listType = "user";
-  var optionsList = {
+  const table_entries_per_page = {{settings.table_entries_per_page}};
+  const listType = "user";
+  const optionsList = {
     valueNames: [
       { name: 'user-id', attr: 'data-id'},
       { name: 'user-name', attr: 'data-name'},
@@ -132,5 +132,5 @@
   };
 var List = new List(listType+'s', optionsList);
 </script>
-<script src="{{ url_for('static', filename='js/list_interactions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/list_interactions.min.js') }}"></script>
 {% endblock %}

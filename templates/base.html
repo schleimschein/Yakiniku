@@ -32,8 +32,7 @@
     <meta charset="UTF-8">
     <title>{{ settings.blog_title }} :: {% block title %} {{ settings.blog_title }} {%endblock %}</title>
 
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css" media="all">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.min.css') }}" media="all">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/highlight/monokai-sublime.min.css') }}" media="all">
@@ -50,7 +49,7 @@
     {% include 'navbar.html' %}
 
     <section class="section" id="main-section">
-            <div id="flashed-messages" class="content">
+            <div id="flashed-messages">
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                   <div class="notification is-{{ category }} has-delete">
                       <button class="delete"></button>
@@ -59,7 +58,7 @@
                 {% endfor %}
             </div>
 
-            <div class="columns" id="main-columns">
+            <div class="columns{% if self.main_vcentered() %} is-mobile{% endif %}" id="main-columns">
             {% if self.left_to_body_column_not_in_column | trim %}
                 {% block left_to_body_column_not_in_column %}
                 {% endblock %}
@@ -71,17 +70,19 @@
                 </div>
             {% endif %}
             {% if self.main() %}
-                <div class="column" id="main-column">
+                <div class="column {% if not self.sidebar() | trim %}is-full-mobile is-8-desktop is-offset-2-desktop{% endif %}" id="main-column">
                   <div class="container is-fluid" id="main-container">
                     {% block main %}
                     {% endblock %}
                   </div>
                 </div>
             {% elif self.main_vcentered() %}
-                <div class="column is-4 is-offset-4" id="main-vcentered-column">
+              <div class="column"></div>
+                <div class="column is-11-mobile is-is-two-fifths-desktop" id="main-vcentered-column">
                     {% block main_vcentered%}
                     {% endblock %}
                 </div>
+                <div class="column"></div>
             {% endif %}
             </div>
     </section>
