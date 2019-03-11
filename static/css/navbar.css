@@ -3,11 +3,7 @@
 }
 
 .logo-text:hover {
-    color:hsl(171, 100%, 41%) ! important;
-}
-
-.navbar{
-    border:none;
+       border:none;
     box-shadow: none;
 }
 
@@ -23,6 +19,19 @@
 .navbar-item.is-tab.is-active{
     color: hsl(171, 100%, 41%) ! important;
     border-bottom-color: hsl(171, 100%, 41%) ! important;
+}
+
+.navbar-item.has-dropdown:hover .navbar-link{
+    background-color:#ffffff;
+}
+
+.navbar-link:hover{
+    color: hsl(171, 100%, 41%) ! important;
+    background-color: #ffffff ! important;
+}
+
+.navbar-link::after{
+    border-color: hsl(171, 100%, 41%) ! important;
 }
 
 #navbar-search-input{
